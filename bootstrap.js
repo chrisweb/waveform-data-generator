@@ -6,10 +6,23 @@ var audioDataAnalyzer = new AudioDataAnalyzer();
 
 var trackDownloader = new TrackDownloader();
 
-trackDownloader.writeTrackToDisc(415208);
 
 
+var temporaryTracksDirecotry = './downloaded_tracks';
+var format = 'ogg';
 
-var values = audioDataAnalyzer.getValues();
+trackDownloader.writeTrackToDisc(415208, function writeTrackCallback(error) {
+    
+    if (!error) {
+    
+        var values = audioDataAnalyzer.getValues();
 
-console.log(values);
+        console.log(values);
+        
+    } else {
+        
+        console.log(error);
+        
+    }
+    
+}, temporaryTracksDirecotry, format);

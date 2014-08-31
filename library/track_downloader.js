@@ -1,3 +1,13 @@
+// nodejs fs
+var fs = require('fs');
+
+// nodejs http
+var http = require('http');
+
+var DirectoryManager = require('./directoryManager').directoryManager;
+
+var directoryManager = new DirectoryManager();
+
 /**
  * 
  * @returns {downloaderConstructor}
@@ -12,17 +22,58 @@ var downloader = function downloaderConstructor() {
  * on disc
  * 
  * @param {type} trackId
+ * @param {type} callback
  * @param {type} temporaryTracksDirecotry
  * @param {type} format
  * @returns {undefined}
  */
-downloader.prototype.writeTrackToDisc = function(trackId, temporaryTracksDirecotry, format) {
+downloader.prototype.writeTrackToDisc = function(trackId, callback, temporaryTracksDirecotry, format) {
 
     if (temporaryTracksDirecotry === undefined) {
         
-        temporaryTracksDirecotry = '';
+        temporaryTracksDirecotry = './downloaded_tracks';
         
     }
+    
+    directoryManager.exists(temporaryTracksDirecotry, function directoryExistsCallback(error, exists) {
+        
+        if (!error) {
+        
+            if (!exists) {
+            
+                directoryManager.create(temporaryTracksDirecotry, createDirectoryCallback = function(error) {
+                
+                    if (!error) {
+                        
+                        downloadFile(trackId, callback, temporaryTracksDirecotry, format);
+                        
+                    } else {
+            
+                        callback(error);
+
+                    }
+                
+                });
+            
+            } else {
+                
+                downloadFile(trackId, callback, temporaryTracksDirecotry, format);
+                
+            }
+            
+        } else {            
+            
+            callback(error);
+            
+        }
+        
+    });
+    
+};
+    
+var downloadFile = function downloadFileFunction(trackId, callback, temporaryTracksDirecotry, format) {
+    
+    console.log('downloadFile: ' + trackId);
     
     if (format === undefined) {
         
@@ -42,10 +93,12 @@ downloader.prototype.writeTrackToDisc = function(trackId, temporaryTracksDirecot
         default:
             throw 'unsupported track format';
     }
+    
+    var trackFileName = trackId + '.' + format;
 
-    var trackPath = temporaryTracksDirecotry + '/' + trackId + '.' + format;
+    var trackPath = temporaryTracksDirecotry + '/' + trackFileName;
 
-    // 
+    // request options
     var options = {
         hostname: 'storage-new.newjamendo.com',
         port: 80,
@@ -74,7 +127,7 @@ downloader.prototype.writeTrackToDisc = function(trackId, temporaryTracksDirecot
 
                 writeStream.end();
 
-                moveTrack();
+                callback(false);
 
             });
 
@@ -85,6 +138,8 @@ downloader.prototype.writeTrackToDisc = function(trackId, temporaryTracksDirecot
             console.log('writeTrackToDisc, http request error: ' + error.message);
 
             writeStream.end();
+            
+            callback(error);
 
         });
 
@@ -97,6 +152,8 @@ downloader.prototype.writeTrackToDisc = function(trackId, temporaryTracksDirecot
         console.log('writeTrackToDisc writeStream, error: ' + error);
 
         writeStream.end();
+        
+        callback(error);
 
     });
 
