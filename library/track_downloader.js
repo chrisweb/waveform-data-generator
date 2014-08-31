@@ -127,7 +127,7 @@ var downloadFile = function downloadFileFunction(trackId, callback, temporaryTra
 
                 writeStream.end();
 
-                callback(false);
+                callback(false, trackPath);
 
             });
 
