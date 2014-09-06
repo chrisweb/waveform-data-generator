@@ -2,38 +2,77 @@ var AudioDataAnalyzer = require('./library/audio_data_analyzer').analyzer;
 
 var TrackDownloader = require('./library/track_downloader').downloader;
 
-var audioDataAnalyzer = new AudioDataAnalyzer();
+var http = require('http');
 
-var trackDownloader = new TrackDownloader();
+var fs = require('fs');
+
+var url = require('url');
 
 
+var serverPort = 35000;
+var serverIp = '127.0.0.1';
 
-var temporaryTracksDirecotry = './downloaded_tracks';
-var format = 'ogg';
-
-trackDownloader.writeTrackToDisc(415208, function writeTrackCallback(error, trackPath) {
+http.createServer(function (request, response) {
     
-    if (!error) {
+    var urlParts = url.parse(request.url);
     
-        var values = audioDataAnalyzer.getValues(trackPath, function getValuesCallback(error, values) {
-            
-            if (!error) {
-            
-                console.log(values);
-                console.log('values count: ' + values.length);
-                
-            } else {
-                
-                console.log(error);
-                
-            }
-            
-        });
-        
-    } else {
-        
-        console.log(error);
-        
+    console.log(urlParts.path);
+    
+    switch(urlParts.path) {
+        case '/':
+            fs.readFile('client/index.html', function(error, html) {
+                response.writeHead(200, { 'Content-Type': 'text/html' });
+                response.write(html);
+                response.end();
+            });
+            break;
+        case 'getwavedata':
+            getWaveData();
+            break;
+        default:
+            response.writeHead(404, { 'Content-Type': 'text/html' });
+            response.write('page not found');
+            response.end();
     }
     
-}, temporaryTracksDirecotry, format);
+}).listen(serverPort, serverIp);
+
+console.log('server is listening, ip: ' + serverIp + ', port: ' + serverPort);
+
+var getWaveData = function getWaveDataFunction() {
+    
+    var audioDataAnalyzer = new AudioDataAnalyzer();
+
+    var trackDownloader = new TrackDownloader();
+    
+    var temporaryTracksDirecotry = './downloaded_tracks';
+    var format = 'ogg';
+
+    trackDownloader.writeTrackToDisc(415208, function writeTrackCallback(error, trackPath) {
+
+        if (!error) {
+
+            audioDataAnalyzer.getValues(trackPath, function getValuesCallback(error, values) {
+
+                if (!error) {
+
+                    console.log(values);
+                    console.log('values count: ' + values.length);
+
+                } else {
+
+                    console.log(error);
+
+                }
+
+            });
+
+        } else {
+
+            console.log(error);
+
+        }
+
+    }, temporaryTracksDirecotry, format);
+    
+};
