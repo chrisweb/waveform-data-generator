@@ -1,6 +1,6 @@
-var AudioDataAnalyzer = require('./library/audio_data_analyzer').analyzer;
+var AudioDataAnalyzer = require('./library/audioDataAnalyzer').analyzer;
 
-var TrackDownloader = require('./library/track_downloader').downloader;
+var TrackDownloader = require('./library/trackDownloader').downloader;
 
 var http = require('http');
 
@@ -26,8 +26,9 @@ http.createServer(function (request, response) {
                 response.end();
             });
             break;
-        case 'getwavedata':
-            getWaveData();
+        case '/getwavedata':
+            var trackId = '415208';
+            getWaveData(trackId);
             break;
         default:
             response.writeHead(404, { 'Content-Type': 'text/html' });
@@ -39,7 +40,7 @@ http.createServer(function (request, response) {
 
 console.log('server is listening, ip: ' + serverIp + ', port: ' + serverPort);
 
-var getWaveData = function getWaveDataFunction() {
+var getWaveData = function getWaveDataFunction(trackId) {
     
     var audioDataAnalyzer = new AudioDataAnalyzer();
 
@@ -48,11 +49,11 @@ var getWaveData = function getWaveDataFunction() {
     var temporaryTracksDirecotry = './downloaded_tracks';
     var format = 'ogg';
 
-    trackDownloader.writeTrackToDisc(415208, function writeTrackCallback(error, trackPath) {
+    trackDownloader.writeTrackToDisc(trackId, function writeTrackCallback(error, trackPath) {
 
         if (!error) {
 
-            audioDataAnalyzer.getValues(trackPath, function getValuesCallback(error, values) {
+            audioDataAnalyzer.getPCMValues(trackPath, function getValuesCallback(error, values) {
 
                 if (!error) {
 
