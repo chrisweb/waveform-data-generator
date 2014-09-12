@@ -16,31 +16,67 @@ http.createServer(function (request, response) {
     
     var urlParts = url.parse(request.url);
     
-    console.log(urlParts.path);
-    
-    switch(urlParts.path) {
-        case '/':
-            fs.readFile('client/index.html', function(error, html) {
-                response.writeHead(200, { 'Content-Type': 'text/html' });
-                response.write(html);
+    if (urlParts.path.split('.').pop() === 'js') {
+        
+        // not secure but this is a prototype
+        fs.readFile('client' + urlParts.path, function(error, fileContent) {
+            
+            if (!error) {
+                
+                response.writeHead(200, { 'Content-Type': 'application/javascript' });
+                response.write(fileContent);
                 response.end();
-            });
-            break;
-        case '/getwavedata':
-            var trackId = '415208';
-            getWaveData(trackId);
-            break;
-        default:
-            response.writeHead(404, { 'Content-Type': 'text/html' });
-            response.write('page not found');
-            response.end();
+                
+            } else {
+                
+                response.writeHead(404, { 'Content-Type': 'text/html' });
+                response.write('page not found');
+                response.end();
+                
+            }
+
+        });
+        
+    } else {
+
+        switch(urlParts.path) {
+            case '/':
+                fs.readFile('client/index.html', function(error, html) {
+                    
+                    if (!error) {
+                    
+                        response.writeHead(200, { 'Content-Type': 'text/html' });
+                        response.write(html);
+                        response.end();
+                        
+                    } else {
+                        
+                        response.writeHead(404, { 'Content-Type': 'text/html' });
+                        response.write('page not found');
+                        response.end();
+                        
+                    }
+                        
+                });
+                break;
+            case '/getwavedata':
+                var trackId = '1135703';
+                var peaksAmount = '200';
+                getWaveData(trackId, peaksAmount);
+                break;
+            default:
+                response.writeHead(404, { 'Content-Type': 'text/html' });
+                response.write('page not found');
+                response.end();
+                
+        }
     }
     
 }).listen(serverPort, serverIp);
 
 console.log('server is listening, ip: ' + serverIp + ', port: ' + serverPort);
 
-var getWaveData = function getWaveDataFunction(trackId) {
+var getWaveData = function getWaveDataFunction(trackId, peaksAmount) {
     
     var audioDataAnalyzer = new AudioDataAnalyzer();
 
@@ -53,12 +89,11 @@ var getWaveData = function getWaveDataFunction(trackId) {
 
         if (!error) {
 
-            audioDataAnalyzer.getPCMValues(trackPath, function getValuesCallback(error, values) {
+            audioDataAnalyzer.getPeaks(trackPath, peaksAmount, function getValuesCallback(error, peaks) {
 
                 if (!error) {
 
-                    console.log(values);
-                    console.log('values count: ' + values.length);
+                    console.log(peaks);
 
                 } else {
 

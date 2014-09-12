@@ -120,7 +120,7 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
  * @param {type} callback
  * @returns {undefined}
  */
-analyzer.prototype.getPCMValues = function getValuesFunction(trackPath, callback) {
+analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmount, callback) {
     
     this.getData(trackPath, function(error, trackData) {
 
@@ -129,7 +129,7 @@ analyzer.prototype.getPCMValues = function getValuesFunction(trackPath, callback
             console.log('ffprobe track data: ');
             console.log(trackData);
             
-            // get audio pcm
+            // get audio pcm as 16bit little endians
             var ffmpegSpawn = childProcess.spawn(
                 'ffmpeg',
                 [
@@ -138,106 +138,113 @@ analyzer.prototype.getPCMValues = function getValuesFunction(trackPath, callback
                     '-f',
                     's16le',
                     '-ac',
-                    trackData.channels,
+                    //trackData.channels,
+                    // put everything into one channel
+                    1,
                     '-acodec',
                     'pcm_s16le',
                     '-ar',
                     trackData.sampleRate,
                     '-y',
-                    'pipe:1'
+                    'pipe:1' // pipe to stdout
                 ]
             );
 
             var stdoutOuputString = '';
             var stderrOuputString = '';
+            
+            var samples = [];
 
-            // TODO: uncomment for ffprobe
-            //ffmpegSpawn.stdout.setEncoding('utf8');
+            ffmpegSpawn.stdout.on('data', function(buffer) {
+                
+                // each buffer contains a certain amount of bytes (8bit)
+                // https://trac.ffmpeg.org/wiki/audio%20types
 
-            var oddByte = null;
-            var channel = 0;
-
-            //var outputCounter = 0;
-
-            var maxValue = 0;
-
-            //var output = [];
-
-            //var counter = 0;
-
-            ffmpegSpawn.stdout.on('data', function(data) {
-
+                // and we convert them to signed 16-bit little endians
                 // http://nodejs.org/api/buffer.html#buffer_buf_readint16le_offset_noassert
-                // https://github.com/jhurliman/node-pcm/blob/master/lib/pcm.js
-
-                var value;
+                
+                
                 var i;
-                var dataLen = data.length;
-                var percentageOfMax = 0;
+                var dataLen = buffer.length;
+                
+                // each buffer data contains 8bit but we read 16bit so i += 2
+                for (i = 0; i < dataLen; i += 2) {
 
-                //counter++;
+                    var positiveSample = Math.abs(buffer.readInt16LE(i, false));
 
-                for (i=0; i < dataLen; i += 2) {
-
-                    value = data.readInt16LE(i, true);
-
-                    //channel = ++channel % 2;
-
-                    //console.log('B: ' + value + ' / ' + channel);
-
-                    //outputCounter++;
-
-                    //if (value > maxValue) maxValue = value;
-
-                    // maxValue is 32767
-
-                    // (value / maxValue)*100 = percentage of max
-                    percentageOfMax = (value / 32767)*100;
-
-                    //return false;
-                    
-                    //outputCounter++;
+                    samples.push(positiveSample);
 
                 }
-                
-                console.log(i);
-
-                //console.log('outputCounter: ' + outputCounter);
-
-                //console.log(maxValue); // 32767
-
-                // get absolute value
-                //var absolutePercentageOfMaxMath = Math.abs(percentageOfMax);
-
-                //output.push(absolutePercentageOfMaxMath);
-
-                //console.log(absolutePercentageOfMaxMath);
-
-                /*var bar = '';
-
-                for (i=0; i < absolutePercentageOfMaxMath/10; i++) {
-
-                    bar += '*';
-
-                }*/
-
-                //console.log(bar);
 
             });
 
             ffmpegSpawn.stdout.on('end', function(data) {
 
                 console.log('ffmpegSpawn stdout end');
-                //console.log(counter);
-                //console.log(outputCounter);
+                
+                var samplesLength = samples.length;
 
-                if (output.length > 0) {
+                if (samplesLength > peaksAmount) {
 
-                    callback(false, output);
+                    var samplesCountPerPeak = Math.floor(samplesLength / peaksAmount);
+                    var peaks = [];
+                    var peaksInPercent = [];
+
+                    var i;
+                    var start = 0;
+                    var end = start + samplesCountPerPeak;
+                    var highestPeak = 0;
+
+                    for (i = 0; i < peaksAmount; i++) {
+                        
+                        var peaksGroup = samples.slice(start, end);
+                        var x;
+                        var samplesSum = 0;
+                        var peaksGroupLength = peaksGroup.length;
+
+                        for (x = 0; x < peaksGroupLength; x++) {
+
+                            samplesSum += peaksGroup[x];
+
+                        }
+
+                        peaks.push(samplesSum);
+                        
+                        if (samplesSum > highestPeak) {
+                            
+                            highestPeak = samplesSum;
+                            
+                        }
+
+                        start += samplesCountPerPeak;
+                        end += samplesCountPerPeak;
+
+                    }
+                    
+                    var y;
+                    var peaksLength = peaks.length;
+
+                    for (y = 0; y < peaksLength; y++) {
+
+                        var peakInPercent = Math.round((peaks[y] / highestPeak) * 100);
+
+                        peaksInPercent.push(peakInPercent);
+
+                    }
+
+                    callback(false, peaksInPercent);
 
                 } else {
+                    
+                    if (samplesLength === 0) {
 
-                    callback('no output recieved');
+                        callback('no output recieved');
+                        
+                    } else if (samplesLength < peaksAmount) {
+                        
+                        callback('not enough peaks in this song for a full wave');
+                        
+                    }
 
                 }
 

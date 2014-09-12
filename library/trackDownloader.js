@@ -118,7 +118,7 @@ downloader.prototype.downloadIfNotExists = function downloadIfNotExists(trackId,
     
 };
     
-var downloadFile = function downloadFileFunction(trackId, callback, trackPath, format) {
+downloader.prototype.downloadFile = function downloadFileFunction(trackId, callback, trackPath, format) {
     
     console.log('downloadFile: ' + trackId);
     
@@ -166,7 +166,7 @@ var downloadFile = function downloadFileFunction(trackId, callback, trackPath, f
 
             httpResponse.on('end', function() {
 
-                console.log('file ' + trackFileName + ' got downloaded into ' + trackPath);
+                console.log('file ' + trackPath + ' got downloaded into ' + trackPath);
 
                 writeStream.end();
 
