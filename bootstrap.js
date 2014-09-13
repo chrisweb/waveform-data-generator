@@ -18,6 +18,8 @@ http.createServer(function (request, response) {
     
     var urlParts = url.parse(request.url);
     
+    //console.log(urlParts);
+    
     if (urlParts.pathname.split('.').pop() === 'js') {
         
         // not secure but this is a prototype
@@ -40,8 +42,6 @@ http.createServer(function (request, response) {
         });
         
     } else {
-
-        console.log(urlParts);
 
         switch(urlParts.pathname) {
             case '/':
