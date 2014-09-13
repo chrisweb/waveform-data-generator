@@ -120,7 +120,7 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
  * @param {type} callback
  * @returns {undefined}
  */
-analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmount, callback) {
+analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountRaw, callback) {
     
     this.getData(trackPath, function(error, trackData) {
 
@@ -128,6 +128,8 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmount,
             
             console.log('ffprobe track data: ');
             console.log(trackData);
+            
+            var peaksAmount = parseInt(peaksAmountRaw);
             
             // get audio pcm as 16bit little endians
             var ffmpegSpawn = childProcess.spawn(

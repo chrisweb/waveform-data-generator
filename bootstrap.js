@@ -8,6 +8,8 @@ var fs = require('fs');
 
 var url = require('url');
 
+var querystring = require('querystring');
+
 
 var serverPort = 35000;
 var serverIp = '127.0.0.1';
@@ -16,10 +18,10 @@ http.createServer(function (request, response) {
     
     var urlParts = url.parse(request.url);
     
-    if (urlParts.path.split('.').pop() === 'js') {
+    if (urlParts.pathname.split('.').pop() === 'js') {
         
         // not secure but this is a prototype
-        fs.readFile('client' + urlParts.path, function(error, fileContent) {
+        fs.readFile('client' + urlParts.pathname, function(error, fileContent) {
             
             if (!error) {
                 
@@ -39,7 +41,9 @@ http.createServer(function (request, response) {
         
     } else {
 
-        switch(urlParts.path) {
+        console.log(urlParts);
+
+        switch(urlParts.pathname) {
             case '/':
                 fs.readFile('client/index.html', function(error, html) {
                     
@@ -60,9 +64,31 @@ http.createServer(function (request, response) {
                 });
                 break;
             case '/getwavedata':
-                var trackId = '1135703';
-                var peaksAmount = '200';
-                getWaveData(trackId, peaksAmount);
+                
+                var queryObject = querystring.parse(urlParts.query);
+                
+                if (typeof queryObject !== 'undefined' && queryObject.trackId !== 'undefined' && queryObject.peaksAmount !== 'undefined') {
+
+                    getWaveData(queryObject.trackId, queryObject.peaksAmount, function(error, peaks) {
+                        
+                        if (!error) {
+                            
+                            response.writeHead(200, { 'Content-Type': 'application/json' });
+                            response.write('{ "peaks": ' + JSON.stringify(peaks) + ' }');
+                            response.end();
+                            
+                        } else {
+                            
+                            response.writeHead(500, { 'Content-Type': 'application/json' });
+                            response.write('{ error: ' + error + ' }');
+                            response.end();
+                            
+                        }
+                        
+                    });
+                    
+                }
+                
                 break;
             default:
                 response.writeHead(404, { 'Content-Type': 'text/html' });
@@ -76,7 +102,7 @@ http.createServer(function (request, response) {
 
 console.log('server is listening, ip: ' + serverIp + ', port: ' + serverPort);
 
-var getWaveData = function getWaveDataFunction(trackId, peaksAmount) {
+var getWaveData = function getWaveDataFunction(trackId, peaksAmount, callback) {
     
     var audioDataAnalyzer = new AudioDataAnalyzer();
 
@@ -93,11 +119,11 @@ var getWaveData = function getWaveDataFunction(trackId, peaksAmount) {
 
                 if (!error) {
 
-                    console.log(peaks);
+                    callback(false, peaks);
 
                 } else {
 
-                    console.log(error);
+                    callback(error);
 
                 }
 
@@ -105,7 +131,7 @@ var getWaveData = function getWaveDataFunction(trackId, peaksAmount) {
 
         } else {
 
-            console.log(error);
+            callback(error);
 
         }
 
