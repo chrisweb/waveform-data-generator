@@ -33,6 +33,7 @@ http.createServer(function (request, response) {
         
         // if the file exists send it to the client
         // not really secure but this is a prototype
+        // TODO: filter the file request
         fs.readFile('client' + urlParts.pathname, function(error, fileContent) {
             
             if (!error) {
@@ -112,41 +113,35 @@ http.createServer(function (request, response) {
                 
                 var queryObject = querystring.parse(urlParts.query);
                 
+                console.log(queryObject);
+                
                 if (typeof queryObject !== 'undefined' && queryObject.trackId !== 'undefined' && queryObject.trackFormat !== 'undefined') {
 
                     var trackName = queryObject.trackId + '.' + queryObject.trackFormat;
+                    var trackPath = 'downloaded_tracks/' + trackName;
+                    
+                    var fileStat = fs.statSync(trackPath);
 
-                    fs.readFile('downloaded_tracks/' + trackName, function(error, track) {
-                        
-                        var mimeType;
+                    var mimeType;
 
-                        switch(queryObject.trackFormat) {
-                            case 'ogg':
-                                mimeType = 'audio/ogg';
-                                break;
-                            case 'mp3':
-                                mimeType = 'audio/mpeg';
-                                break;
-                        }
-                        
-                        if (!error) {
-                            
-                            response.writeHead(200, { 'Content-Type': mimeType });
-                            response.write(track);
-                            response.end();
-                            
-                        } else {
-                            
-                            response.writeHead(404, { 'Content-Type': 'text/html' });
-                            response.write('page not found');
-                            response.end();
-                            
-                        }
-                        
-                    });
+                    switch(queryObject.trackFormat) {
+                        case 'ogg':
+                            mimeType = 'audio/ogg';
+                            break;
+                        case 'mp3':
+                            mimeType = 'audio/mpeg';
+                            break;
+                    }
+
+                    response.writeHead(200, { 'Content-Type': mimeType, 'Content-Length': fileStat.size });
+
+                    var readStream = fs.createReadStream(trackPath);
+                    
+                    readStream.pipe(response);
                     
                 }
                 
+                break;
             default:
                 response.writeHead(404, { 'Content-Type': 'text/html' });
                 response.write('page not found');
