@@ -83,9 +83,9 @@ http.createServer(function (request, response) {
                 
                 var queryObject = querystring.parse(urlParts.query);
                 
-                if (typeof queryObject !== 'undefined' && queryObject.trackId !== 'undefined' && queryObject.peaksAmount !== 'undefined') {
+                if (typeof queryObject !== 'undefined' && queryObject.trackId !== 'undefined' && queryObject.trackFormat !== 'undefined' && queryObject.peaksAmount !== 'undefined') {
 
-                    getWaveData(queryObject.trackId, queryObject.peaksAmount, function(error, peaks) {
+                    getWaveData(queryObject.trackId, queryObject.trackFormat, queryObject.peaksAmount, function(error, peaks) {
                         
                         if (!error) {
                             
@@ -108,6 +108,45 @@ http.createServer(function (request, response) {
                 }
                 
                 break;
+            case '/getTrack':
+                
+                var queryObject = querystring.parse(urlParts.query);
+                
+                if (typeof queryObject !== 'undefined' && queryObject.trackId !== 'undefined' && queryObject.trackFormat !== 'undefined') {
+
+                    var trackName = queryObject.trackId + '.' + queryObject.trackFormat;
+
+                    fs.readFile('downloaded_tracks/' + trackName, function(error, track) {
+                        
+                        var mimeType;
+
+                        switch(queryObject.trackFormat) {
+                            case 'ogg':
+                                mimeType = 'audio/ogg';
+                                break;
+                            case 'mp3':
+                                mimeType = 'audio/mpeg';
+                                break;
+                        }
+                        
+                        if (!error) {
+                            
+                            response.writeHead(200, { 'Content-Type': mimeType });
+                            response.write(track);
+                            response.end();
+                            
+                        } else {
+                            
+                            response.writeHead(404, { 'Content-Type': 'text/html' });
+                            response.write('page not found');
+                            response.end();
+                            
+                        }
+                        
+                    });
+                    
+                }
+                
             default:
                 response.writeHead(404, { 'Content-Type': 'text/html' });
                 response.write('page not found');
@@ -125,11 +164,12 @@ console.log('server is listening, ip: ' + serverIp + ', port: ' + serverPort);
  * get the wave data for a given trackId
  * 
  * @param {type} trackId
+ * @param {type} trackFormat
  * @param {type} peaksAmount
  * @param {type} callback
  * @returns {undefined}
  */
-var getWaveData = function getWaveDataFunction(trackId, peaksAmount, callback) {
+var getWaveData = function getWaveDataFunction(trackId, trackFormat, peaksAmount, callback) {
     
     // initialize the audioAnalyzer
     var audioDataAnalyzer = new AudioDataAnalyzer();
@@ -138,7 +178,6 @@ var getWaveData = function getWaveDataFunction(trackId, peaksAmount, callback) {
     var trackDownloader = new TrackDownloader();
     
     var temporaryTracksDirecotry = './downloaded_tracks';
-    var format = 'ogg';
 
     // download the track and write it on the disc of it does not already exist
     trackDownloader.writeTrackToDisc(trackId, function writeTrackCallback(error, trackPath) {
@@ -168,6 +207,6 @@ var getWaveData = function getWaveDataFunction(trackId, peaksAmount, callback) {
 
         }
 
-    }, temporaryTracksDirecotry, format);
+    }, temporaryTracksDirecotry, trackFormat);
     
 };
