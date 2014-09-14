@@ -4,6 +4,8 @@ var childProcess = require('child_process');
 
 /**
  * 
+ * analyzer constructor
+ * 
  * @returns {analyzerConstructor}
  */
 var analyzer = function analyzerConstructor() {
@@ -37,6 +39,7 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
     var stdoutOuputString = '';
     var stderrOuputString = '';
 
+    // ffprobe recieves data on stdout
     ffprobeSpawn.stdout.on('data', function(data) {
 
         stdoutOuputString += data;
@@ -54,8 +57,10 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
             console.log('stdoutOuput');
             //console.log(stdoutOuputString);
             
+            // parse the ffprobe json string response
             var stdoutOuput = JSON.parse(stdoutOuputString);
 
+            // create a trackdata object with the informations we need
             trackData.duration = stdoutOuput['format']['duration'];
             trackData.size = stdoutOuput['format']['size'];
             trackData.bitRate = stdoutOuput['format']['bit_rate'];
@@ -84,12 +89,14 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
 
         console.log('ffprobeSpawn exit, code: ' + code);
         
+        // if the code is an error code
         if (code > 0) {
             
             callback(stderrOuputString);
             
         } else {
             
+            // if the trackdata object isnt empty
             if (Object.keys(trackData).length > 0) {
                 
                 callback(false, trackData);
@@ -117,6 +124,7 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
  * get pcm data of a track
  * 
  * @param {type} trackPath
+ * @param {type} peaksAmountRaw
  * @param {type} callback
  * @returns {undefined}
  */
@@ -186,8 +194,11 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                 
                 var samplesLength = samples.length;
 
+                // check if we got enough samples to put at least one sample
+                // into each peak
                 if (samplesLength > peaksAmount) {
 
+                    // calculate how much samples we have to put into one peak
                     var samplesCountPerPeak = Math.floor(samplesLength / peaksAmount);
                     var peaks = [];
                     var peaksInPercent = [];
@@ -197,13 +208,16 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                     var end = start + samplesCountPerPeak;
                     var highestPeak = 0;
 
+                    // build as much peaks as got requested
                     for (i = 0; i < peaksAmount; i++) {
                         
+                        // get a series of samples collection
                         var peaksGroup = samples.slice(start, end);
                         var x;
                         var samplesSum = 0;
                         var peaksGroupLength = peaksGroup.length;
 
+                        // merge the samples into a single peak
                         for (x = 0; x < peaksGroupLength; x++) {
 
                             samplesSum += peaksGroup[x];
@@ -212,6 +226,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
                         peaks.push(samplesSum);
                         
+                        // find the highest peak
                         if (samplesSum > highestPeak) {
                             
                             highestPeak = samplesSum;
@@ -226,6 +241,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                     var y;
                     var peaksLength = peaks.length;
 
+                    // convert the peaks into percantage values
                     for (y = 0; y < peaksLength; y++) {
 
                         var peakInPercent = Math.round((peaks[y] / highestPeak) * 100);

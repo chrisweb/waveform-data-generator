@@ -3,6 +3,8 @@ var fs = require('fs');
 
 /**
  * 
+ * directory manager
+ * 
  * @returns {directoryManagerConstructor}
  */
 var directoryManager = function directoryManagerConstructor() {
@@ -10,6 +12,8 @@ var directoryManager = function directoryManagerConstructor() {
 };
 
 /**
+ * 
+ * check if the directory exists
  * 
  * @param {type} directory
  * @param {type} callback
@@ -37,6 +41,8 @@ directoryManager.prototype.exists = function directoryExistsFunction(directory, 
 };
 
 /**
+ * 
+ * create a new directory
  * 
  * @param {type} directory
  * @param {type} callback

@@ -3,6 +3,8 @@ var fs = require('fs');
 
 /**
  * 
+ * file manager
+ * 
  * @returns {fileManagerConstructor}
  */
 var fileManager = function fileManagerConstructor() {
@@ -11,7 +13,7 @@ var fileManager = function fileManagerConstructor() {
 
 /**
  * 
- * does the file exist
+ * check if the file exists
  * 
  * @param {type} file
  * @param {type} callback

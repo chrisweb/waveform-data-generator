@@ -11,6 +11,8 @@ var FileManager = require('./fileManager').fileManager;
 
 /**
  * 
+ * track downloader
+ * 
  * @returns {downloaderConstructor}
  */
 var downloader = function downloaderConstructor() {
@@ -40,16 +42,22 @@ downloader.prototype.writeTrackToDisc = function(trackId, callback, temporaryTra
     
     var that = this;
     
+    // check if the temporary tracks directory already exists
     directoryManager.exists(temporaryTracksDirecotry, function directoryExistsCallback(error, exists) {
         
+        // if there was no error checking if the directory exists
         if (!error) {
         
+            // if the directory does not exist
             if (!exists) {
             
+                // create a new directory
                 directoryManager.create(temporaryTracksDirecotry, createDirectoryCallback = function(error) {
                 
+                    // if there was no error creating the new directory
                     if (!error) {
                         
+                        // download the the track and store it on disc
                         that.downloadIfNotExists(trackId, callback, temporaryTracksDirecotry, format);
                         
                     } else {
@@ -62,6 +70,7 @@ downloader.prototype.writeTrackToDisc = function(trackId, callback, temporaryTra
             
             } else {
                 
+                // download the the track and store it on disc
                 that.downloadIfNotExists(trackId, callback, temporaryTracksDirecotry, format);
                 
             }
@@ -77,6 +86,8 @@ downloader.prototype.writeTrackToDisc = function(trackId, callback, temporaryTra
 };
 
 /**
+ * 
+ * donwloads a track if does not already exist on disc
  * 
  * @param {type} trackId
  * @param {type} callback
@@ -94,12 +105,15 @@ downloader.prototype.downloadIfNotExists = function downloadIfNotExists(trackId,
     
     var that = this;
     
+    // check if the file already exists
     fileManager.exists(filePath, function fileExistsCallback(error, exists) {
         
+        // if there was no error checking if the file exists
         if (!error) {
             
             if (!exists) {
             
+                // download the file and store it in the temporary directory
                 that.downloadFile(trackId, callback, filePath, format);
                 
             } else {
@@ -117,7 +131,17 @@ downloader.prototype.downloadIfNotExists = function downloadIfNotExists(trackId,
     });
     
 };
-    
+
+/**
+ * 
+ * download a file
+ * 
+ * @param {type} trackId
+ * @param {type} callback
+ * @param {type} trackPath
+ * @param {type} format
+ * @returns {undefined}
+ */
 downloader.prototype.downloadFile = function downloadFileFunction(trackId, callback, trackPath, format) {
     
     console.log('downloadFile: ' + trackId);
@@ -130,6 +154,7 @@ downloader.prototype.downloadFile = function downloadFileFunction(trackId, callb
     
     var formatCode;
     
+    // track format
     switch(format) {
         case 'mp3':
             formatCode = 'mp31';
@@ -151,23 +176,29 @@ downloader.prototype.downloadFile = function downloadFileFunction(trackId, callb
 
     var writeStream = fs.createWriteStream(trackPath);
 
+    // open a new write stream
     writeStream.on('open', function() {
 
+        // request the file from remote server
         var httpRequest = http.request(options, function(httpResponse) {
 
             console.log('writeTrackToDisc httpRequest STATUS: ' + httpResponse.statusCode);
             console.log('writeTrackToDisc httpRequest HEADERS: ' + JSON.stringify(httpResponse.headers));
 
+            // on successful request
             httpResponse.on('data', function(chunk) {
 
+                // write the file
                 writeStream.write(chunk);
 
             });
 
+            // the connection got closed
             httpResponse.on('end', function() {
 
                 console.log('file ' + trackPath + ' got downloaded into ' + trackPath);
 
+                // close the write stream
                 writeStream.end();
 
                 callback(false, trackPath);
@@ -176,6 +207,7 @@ downloader.prototype.downloadFile = function downloadFileFunction(trackId, callb
 
         });
 
+        // the request to the remote server failed
         httpRequest.on('error', function(error) {
 
             console.log('writeTrackToDisc, http request error: ' + error.message);
@@ -190,10 +222,12 @@ downloader.prototype.downloadFile = function downloadFileFunction(trackId, callb
 
     });
 
+    // writing the file failed
     writeStream.on('error', function(error) {
 
         console.log('writeTrackToDisc writeStream, error: ' + error);
 
+        // close the stream
         writeStream.end();
         
         callback(error);
