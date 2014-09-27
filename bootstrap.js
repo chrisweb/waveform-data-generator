@@ -1,6 +1,6 @@
 var AudioDataAnalyzer = require('./library/audioDataAnalyzer').analyzer;
 
-var TrackDownloader = require('./library/trackDownloader').downloader;
+var FileDownloader = require('./library/fileDownloader').downloader;
 
 var http = require('http');
 
@@ -86,7 +86,29 @@ http.createServer(function (request, response) {
                 
                 if (typeof queryObject !== 'undefined' && queryObject.trackId !== 'undefined' && queryObject.trackFormat !== 'undefined' && queryObject.peaksAmount !== 'undefined') {
 
-                    getWaveData(queryObject.trackId, queryObject.trackFormat, queryObject.peaksAmount, function(error, peaks) {
+                    // track format
+                    switch(options.fileExtension) {
+                        case 'mp3':
+                            formatCode = 'mp31';
+                            break;
+                        case 'ogg':
+                            formatCode = 'ogg1';
+                            break;
+                        default:
+                            throw 'unsupported file format';
+                    }
+
+                    var options = {
+                        trackId: queryObject.trackId,
+                        trackFormat: queryObject.trackFormat,
+                        peaksAmount: queryObject.peaksAmount,
+                        host: 'storage-new.newjamendo.com',
+                        port: 80,
+                        method: 'GET',
+                        serverDirecotry: './downloaded_tracks'
+                    };
+
+                    getWaveData(options, function(error, peaks) {
                         
                         if (!error) {
                             
@@ -158,30 +180,26 @@ console.log('server is listening, ip: ' + serverIp + ', port: ' + serverPort);
  * 
  * get the wave data for a given trackId
  * 
- * @param {type} trackId
- * @param {type} trackFormat
- * @param {type} peaksAmount
+ * @param {type} options
  * @param {type} callback
  * @returns {undefined}
  */
-var getWaveData = function getWaveDataFunction(trackId, trackFormat, peaksAmount, callback) {
+var getWaveData = function getWaveDataFunction(options, callback) {
     
     // initialize the audioAnalyzer
     var audioDataAnalyzer = new AudioDataAnalyzer();
 
     // initialize the track downloader
-    var trackDownloader = new TrackDownloader();
-    
-    var temporaryTracksDirecotry = './downloaded_tracks';
+    var fileDownloader = new FileDownloader();
 
     // download the track and write it on the disc of it does not already exist
-    trackDownloader.writeTrackToDisc(trackId, function writeTrackCallback(error, trackPath) {
+    fileDownloader.writeToDisc(options, function writeFileCallback(error, trackPath) {
 
         // if there was no error downloading and writing the track
         if (!error) {
 
             // analyze the track using ffmpeg
-            audioDataAnalyzer.getPeaks(trackPath, peaksAmount, function getValuesCallback(error, peaks) {
+            audioDataAnalyzer.getPeaks(trackPath, options, function getValuesCallback(error, peaks) {
 
                 // if there was no error analyzing the track
                 if (!error) {
@@ -202,6 +220,6 @@ var getWaveData = function getWaveDataFunction(trackId, trackFormat, peaksAmount
 
         }
 
-    }, temporaryTracksDirecotry, trackFormat);
+    });
     
 };
