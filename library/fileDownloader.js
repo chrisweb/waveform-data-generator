@@ -141,7 +141,7 @@ downloader.prototype.downloadIfNotExists = function downloadIfNotExists(options,
  */
 downloader.prototype.downloadFile = function downloadFileFunction(downloadOptions, callback) {
     
-    console.log('downloadFile: ' + downloadOptions.fileName);
+    //console.log('downloadFile: ' + downloadOptions.fileName);
 
     if (downloadOptions === undefined) {
         
@@ -189,13 +189,13 @@ downloader.prototype.downloadFile = function downloadFileFunction(downloadOption
             method: downloadOptions.method
         };
         
-        console.log(requestOptions);
+        //console.log(requestOptions);
         
         // request the file from remote server
         var httpRequest = http.request(requestOptions, function(httpResponse) {
 
-            console.log('writeTrackToDisc httpRequest STATUS: ' + httpResponse.statusCode);
-            console.log('writeTrackToDisc httpRequest HEADERS: ' + JSON.stringify(httpResponse.headers));
+            //console.log('writeTrackToDisc httpRequest STATUS: ' + httpResponse.statusCode);
+            //console.log('writeTrackToDisc httpRequest HEADERS: ' + JSON.stringify(httpResponse.headers));
 
             // on successful request
             httpResponse.on('data', function(chunk) {
@@ -208,7 +208,7 @@ downloader.prototype.downloadFile = function downloadFileFunction(downloadOption
             // the connection got closed
             httpResponse.on('end', function() {
 
-                console.log('remote file: ' + downloadOptions.fileName + ', got downloaded into: ' + downloadOptions.serverDirectory);
+                //console.log('remote file: ' + downloadOptions.fileName + ', got downloaded into: ' + downloadOptions.serverDirectory);
 
                 // close the write stream
                 writeStream.end();
@@ -222,7 +222,7 @@ downloader.prototype.downloadFile = function downloadFileFunction(downloadOption
         // the request to the remote server failed
         httpRequest.on('error', function(error) {
 
-            console.log('writeToDisc, http request error: ' + error.message);
+            //console.log('writeToDisc, http request error: ' + error.message);
 
             writeStream.end();
             
@@ -237,7 +237,7 @@ downloader.prototype.downloadFile = function downloadFileFunction(downloadOption
     // writing the file failed
     writeStream.on('error', function(error) {
 
-        console.log('writeToDisc writeStream, error: ' + error);
+        //console.log('writeToDisc writeStream, error: ' + error);
 
         // close the stream
         writeStream.end();

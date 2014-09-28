@@ -50,7 +50,7 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
 
     ffprobeSpawn.stdout.on('end', function(data) {
 
-        console.log('ffprobeSpawn stdout end');
+        //console.log('ffprobeSpawn stdout end');
 
         if (stdoutOuputString !== '') {
 
@@ -85,13 +85,13 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
 
     ffprobeSpawn.stderr.on('end', function() {
 
-        console.log('ffprobeSpawn stderr end');
+        //console.log('ffprobeSpawn stderr end');
 
     });
 
     ffprobeSpawn.on('exit', function(code) {
 
-        console.log('ffprobeSpawn exit, code: ' + code);
+        //console.log('ffprobeSpawn exit, code: ' + code);
         
         // if the code is an error code
         if (code > 0) {
@@ -123,7 +123,7 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
 
     ffprobeSpawn.on('close', function() {
 
-        console.log('ffprobeSpawn close');
+        //console.log('ffprobeSpawn close');
 
     });
     
@@ -208,7 +208,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
             ffmpegSpawn.stdout.on('end', function(data) {
 
-                console.log('ffmpegSpawn stdout end');
+                //console.log('ffmpegSpawn stdout end');
                 
                 var samplesLength = samples.length;
 
@@ -296,19 +296,19 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
             ffmpegSpawn.stderr.on('end', function() {
 
-                console.log('ffmpegSpawn stderr end');
+                //console.log('ffmpegSpawn stderr end');
 
             });
 
             ffmpegSpawn.on('exit', function(code) {
 
-                console.log('ffmpegSpawn exit, code: ' + code);
+                //console.log('ffmpegSpawn exit, code: ' + code);
 
             });
 
             ffmpegSpawn.on('close', function() {
 
-                console.log('ffmpegSpawn close');
+                //console.log('ffmpegSpawn close');
 
             });
             

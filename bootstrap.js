@@ -110,7 +110,7 @@ http.createServer(function (request, response) {
                 
                 var queryObject = querystring.parse(urlParts.query);
                 
-                console.log(queryObject);
+                //console.log(queryObject);
                 
                 if (typeof queryObject !== 'undefined' && queryObject.trackId !== 'undefined' && queryObject.trackFormat !== 'undefined') {
 

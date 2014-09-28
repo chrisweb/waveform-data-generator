@@ -21,7 +21,7 @@ var fileManager = function fileManagerConstructor() {
  */
 fileManager.prototype.exists = function fileExistsFunction(file, callback) {
     
-    console.log('file exists? file: ' + file);
+    //console.log('file exists? file: ' + file);
     
     if (callback !== undefined) {
     

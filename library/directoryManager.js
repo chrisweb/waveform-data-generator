@@ -21,7 +21,7 @@ var directoryManager = function directoryManagerConstructor() {
  */
 directoryManager.prototype.exists = function directoryExistsFunction(directory, callback) {
     
-    console.log('directory exists? directory: ' + directory);
+    //console.log('directory exists? directory: ' + directory);
     
     if (callback !== undefined) {
     
@@ -66,7 +66,7 @@ directoryManager.prototype.exists = function directoryExistsFunction(directory, 
  */
 directoryManager.prototype.create = function createDirectoryFunction(directory, callback) {
     
-    console.log('create directory: ' + directory);
+    //console.log('create directory: ' + directory);
     
     if (callback !== undefined) {
     
