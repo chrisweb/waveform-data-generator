@@ -21,20 +21,36 @@ var directoryManager = function directoryManagerConstructor() {
  */
 directoryManager.prototype.exists = function directoryExistsFunction(directory, callback) {
     
-    console.log('directoryExists: ' + directory);
+    console.log('directory exists? directory: ' + directory);
     
     if (callback !== undefined) {
     
-        // async exists
-        fs.exists(directory, function(exists) {
+        if (directory !== undefined) {
+    
+            // async exists
+            fs.exists(directory, function(exists) {
 
-            callback(false, exists);
+                callback(false, exists);
 
-        });
+            });
+            
+        } else {
+            
+            callback('directory is undefined');
+            
+        }
         
     } else {
         
-        fs.existsSync(directory);
+        if (directory !== undefined) {
+        
+            fs.existsSync(directory);
+            
+        } else {
+            
+            throw 'directory is undefined';
+            
+        }
         
     }
     
@@ -50,7 +66,7 @@ directoryManager.prototype.exists = function directoryExistsFunction(directory, 
  */
 directoryManager.prototype.create = function createDirectoryFunction(directory, callback) {
     
-    console.log('createDirectory: ' + directory);
+    console.log('create directory: ' + directory);
     
     if (callback !== undefined) {
     
@@ -70,7 +86,7 @@ directoryManager.prototype.create = function createDirectoryFunction(directory, 
         
     } else {
         
-        fs.mkdirSync(directory, 0666);
+        return fs.mkdirSync(directory, 0666);
         
     }
     

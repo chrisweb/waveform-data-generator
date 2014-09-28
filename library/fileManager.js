@@ -21,20 +21,36 @@ var fileManager = function fileManagerConstructor() {
  */
 fileManager.prototype.exists = function fileExistsFunction(file, callback) {
     
-    console.log('file exists: ' + file);
+    console.log('file exists? file: ' + file);
     
     if (callback !== undefined) {
     
-        // async exists
-        fs.exists(file, function(exists) {
+        if (file !== undefined) {
+    
+            // async exists
+            fs.exists(file, function(exists) {
 
-            callback(false, exists);
+                callback(false, exists);
 
-        });
+            });
+            
+        } else {
+            
+            callback('file is undefined');
+            
+        }
         
     } else {
         
-        fs.existsSync(file);
+        if (file !== undefined) {
+        
+            return fs.existsSync(file);
+            
+        } else {
+            
+            throw 'file is undefined';
+            
+        }
         
     }
     

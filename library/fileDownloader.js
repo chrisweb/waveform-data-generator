@@ -35,9 +35,9 @@ downloader.prototype.writeToDisc = function(options, callback) {
         
     }
 
-    if (options.serverDirecotry === undefined) {
+    if (options.serverDirectory === undefined) {
         
-        options.serverDirecotry = './downloads';
+        options.serverDirectory = './downloads';
         
     }
     
@@ -46,7 +46,7 @@ downloader.prototype.writeToDisc = function(options, callback) {
     var that = this;
     
     // check if the temporary tracks directory already exists
-    directoryManager.exists(options.serverDirecotry, function directoryExistsCallback(error, exists) {
+    directoryManager.exists(options.serverDirectory, function directoryExistsCallback(error, exists) {
         
         // if there was no error checking if the directory exists
         if (!error) {
@@ -55,7 +55,7 @@ downloader.prototype.writeToDisc = function(options, callback) {
             if (!exists) {
             
                 // create a new directory
-                directoryManager.create(options.serverDirecotry, createDirectoryCallback = function(error) {
+                directoryManager.create(options.serverDirectory, createDirectoryCallback = function(error) {
                 
                     // if there was no error creating the new directory
                     if (!error) {
@@ -100,7 +100,7 @@ downloader.prototype.downloadIfNotExists = function downloadIfNotExists(options,
     
     var fileManager = new FileManager();
     
-    var filePath = options.serverDirecotry + '/' + options.fileName;
+    var filePath = options.serverDirectory + '/' + options.fileName;
     
     var that = this;
     
@@ -141,7 +141,7 @@ downloader.prototype.downloadIfNotExists = function downloadIfNotExists(options,
  */
 downloader.prototype.downloadFile = function downloadFileFunction(downloadOptions, callback) {
     
-    console.log('downloadFile: ' + downloadOptions.path);
+    console.log('downloadFile: ' + downloadOptions.fileName);
 
     if (downloadOptions === undefined) {
         
@@ -173,7 +173,11 @@ downloader.prototype.downloadFile = function downloadFileFunction(downloadOption
         
     }
     
-    var writeStream = fs.createWriteStream(downloadOptions.filePath + downloadOptions.fileName);
+    // the file path on the server
+    var serverFilePath = downloadOptions.serverDirectory + '/' + downloadOptions.fileName;
+    
+    // create a write stream
+    var writeStream = fs.createWriteStream(serverFilePath);
 
     // open a new write stream
     writeStream.on('open', function() {
@@ -181,10 +185,12 @@ downloader.prototype.downloadFile = function downloadFileFunction(downloadOption
         var requestOptions = {
             hostname: downloadOptions.remoteHost,
             port: downloadOptions.remotePort,
-            path: downloadOptions.remotePath,
+            path: downloadOptions.remotePath + downloadOptions.fileName,
             method: downloadOptions.method
         };
-
+        
+        console.log(requestOptions);
+        
         // request the file from remote server
         var httpRequest = http.request(requestOptions, function(httpResponse) {
 
@@ -207,7 +213,7 @@ downloader.prototype.downloadFile = function downloadFileFunction(downloadOption
                 // close the write stream
                 writeStream.end();
 
-                callback(false, downloadOptions.serverDirectory + downloadOptions.fileName);
+                callback(false, serverFilePath);
 
             });
 

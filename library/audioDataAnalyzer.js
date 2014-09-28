@@ -54,18 +54,22 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
 
         if (stdoutOuputString !== '') {
 
-            console.log('stdoutOuput');
+            //console.log('stdoutOuput');
             //console.log(stdoutOuputString);
             
             // parse the ffprobe json string response
             var stdoutOuput = JSON.parse(stdoutOuputString);
+            
+            if (Object.keys(stdoutOuput).length > 0) {
 
-            // create a trackdata object with the informations we need
-            trackData.duration = stdoutOuput['format']['duration'];
-            trackData.size = stdoutOuput['format']['size'];
-            trackData.bitRate = stdoutOuput['format']['bit_rate'];
-            trackData.sampleRate = stdoutOuput['streams'][0]['sample_rate'];
-            trackData.channels = stdoutOuput['streams'][0]['channels'];
+                // create a trackdata object with the informations we need
+                trackData.duration = stdoutOuput['format']['duration'];
+                trackData.size = stdoutOuput['format']['size'];
+                trackData.bitRate = stdoutOuput['format']['bit_rate'];
+                trackData.sampleRate = stdoutOuput['streams'][0]['sample_rate'];
+                trackData.channels = stdoutOuput['streams'][0]['channels'];
+                
+            }
 
         }
 
@@ -91,6 +95,12 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
         
         // if the code is an error code
         if (code > 0) {
+            
+            if (stderrOuputString === '') {
+                
+                stderrOuputString = 'unknown ffprobe error';
+                
+            }
             
             callback(stderrOuputString);
             
@@ -134,10 +144,18 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
         if (!error) {
             
-            console.log('ffprobe track data: ');
-            console.log(trackData);
+            //console.log('ffprobe track data: ');
+            //console.log(trackData);
             
-            var peaksAmount = parseInt(peaksAmountRaw);
+            if (peaksAmountRaw !== undefined) {
+            
+                var peaksAmount = parseInt(peaksAmountRaw);
+                
+            } else {
+                
+                callback('peaksAmount is undefined');
+                
+            }
             
             // get audio pcm as 16bit little endians
             var ffmpegSpawn = childProcess.spawn(
