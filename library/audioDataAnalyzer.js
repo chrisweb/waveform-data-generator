@@ -129,7 +129,15 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
     
     ffprobeSpawn.on('error', function(error) {
 
-        callback(error);
+        if (error === 'Error: spawn ENOENT') {
+
+            callback('Unable to locate ffprobe, check it is installed and in the path');
+            
+        } else {
+            
+            callback(error);
+            
+        }
 
     });
     
@@ -320,7 +328,15 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
             
             ffmpegSpawn.on('error', function(error) {
 
-                callback(error);
+                if (error === 'Error: spawn ENOENT') {
+
+                    callback('Unable to locate ffmpeg, check it is installed and in the path');
+
+                } else {
+
+                    callback(error);
+
+                }
 
             });
             
