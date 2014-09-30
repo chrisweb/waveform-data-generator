@@ -127,6 +127,12 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
 
     });
     
+    ffprobeSpawn.on('error', function(error) {
+
+        callback(error);
+
+    });
+    
 };
 
 /**
@@ -309,6 +315,12 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
             ffmpegSpawn.on('close', function() {
 
                 //console.log('ffmpegSpawn close');
+
+            });
+            
+            ffmpegSpawn.on('error', function(error) {
+
+                callback(error);
 
             });
             
