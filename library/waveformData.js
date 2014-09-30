@@ -13,7 +13,7 @@ var queryObjectToOptions = function queryObjectToOptionsFunction(queryObject) {
         trackFormat: queryObject.trackFormat,
         peaksAmount: queryObject.peaksAmount,
         method: 'GET',
-        serverDirectory: './downloaded_tracks',
+        serverDirectory: queryObject.serverDirectory,
         fileName: queryObject.trackId + '.' + queryObject.trackFormat
     };
     
