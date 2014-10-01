@@ -1,6 +1,6 @@
 
 // nodejs child_process
-var childProcess = require('child_process');
+var childProcessSpawn = require('child_process').spawn;
 
 /**
  * 
@@ -22,8 +22,15 @@ var analyzer = function analyzerConstructor() {
  */
 analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
     
+    var stdoutOuputString = '';
+    var stderrOuputString = '';
+    
+    var trackData = {};
+    
+    //console.log(trackPath);
+    
     // ffprobe file data
-    var ffprobeSpawn = childProcess.spawn(
+    var ffprobeSpawn = childProcessSpawn(
        'ffprobe',
        [
            trackPath,
@@ -35,9 +42,9 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
            'json'
        ]
     );
-
-    var stdoutOuputString = '';
-    var stderrOuputString = '';
+    
+    //ffprobeSpawn.stdout.setEncoding('utf8');
+    ffprobeSpawn.stderr.setEncoding('utf8');
 
     // ffprobe recieves data on stdout
     ffprobeSpawn.stdout.on('data', function(data) {
@@ -45,20 +52,19 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
         stdoutOuputString += data;
         
     });
-    
-    var trackData = {};
 
     ffprobeSpawn.stdout.on('end', function(data) {
 
         //console.log('ffprobeSpawn stdout end');
+        //console.log(stdoutOuputString);
 
         if (stdoutOuputString !== '') {
 
-            //console.log('stdoutOuput');
-            //console.log(stdoutOuputString);
-            
             // parse the ffprobe json string response
             var stdoutOuput = JSON.parse(stdoutOuputString);
+            
+            //console.log(stdoutOuput);
+            //console.log(Object.keys(stdoutOuput).length);
             
             if (Object.keys(stdoutOuput).length > 0) {
 
@@ -70,12 +76,12 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
                 trackData.channels = stdoutOuput['streams'][0]['channels'];
                 
             }
+            
+            //console.log(trackData);
 
         }
 
     });
-
-    ffprobeSpawn.stderr.setEncoding('utf8');
 
     ffprobeSpawn.stderr.on('data', function(data) {
 
@@ -106,12 +112,17 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
             
         } else {
             
+            //console.log(trackData);
+            //console.log(Object.keys(trackData).length);
+            
             // if the trackdata object isnt empty
             if (Object.keys(trackData).length > 0) {
                 
                 callback(false, trackData);
                 
             } else {
+                
+                //console.log('ffprobe did not output any data');
                 
                 callback('ffprobe did not output any data');
                 
@@ -158,9 +169,6 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
         if (!error) {
             
-            //console.log('ffprobe track data: ');
-            //console.log(trackData);
-            
             if (peaksAmountRaw !== undefined) {
             
                 var peaksAmount = parseInt(peaksAmountRaw);
@@ -172,7 +180,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
             }
             
             // get audio pcm as 16bit little endians
-            var ffmpegSpawn = childProcess.spawn(
+            var ffmpegSpawn = childProcessSpawn(
                 'ffmpeg',
                 [
                     '-i',
@@ -194,6 +202,9 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
             var stdoutOuputString = '';
             var stderrOuputString = '';
+            
+            //ffmpegSpawn.stdout.setEncoding('utf8');
+            ffmpegSpawn.stderr.setEncoding('utf8');
             
             var samples = [];
 
@@ -299,8 +310,6 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                 }
 
             });
-
-            ffmpegSpawn.stderr.setEncoding('utf8');
 
             ffmpegSpawn.stderr.on('data', function(data) {
 
