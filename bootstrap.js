@@ -115,7 +115,14 @@ http.createServer(function (request, response) {
                 if (typeof queryObject !== 'undefined' && queryObject.trackId !== 'undefined' && queryObject.trackFormat !== 'undefined') {
 
                     var trackName = queryObject.trackId + '.' + queryObject.trackFormat;
-                    var trackPath = 'downloaded_tracks/' + trackName;
+                    
+                    if (queryObject.serverDirectory === undefined) {
+
+                        queryObject.serverDirectory = './downloads';
+
+                    }
+                    
+                    var trackPath = queryObject.serverDirectory + '/' + trackName;
                     
                     var fileStat = fs.statSync(trackPath);
 

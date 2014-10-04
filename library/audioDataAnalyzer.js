@@ -10,6 +10,16 @@ var childProcessSpawn = require('child_process').spawn;
  */
 var analyzer = function analyzerConstructor() {
     
+    this.stdoutFfprobeOuputString = '';
+    this.stderrFfprobeOuputString = '';
+    
+    this.stderrFfmpgegOuputString = '';
+    
+    this.samples = [];
+    this.peaksInPercent = [];
+    
+    this.trackData = {};
+    
 };
 
 /**
@@ -22,12 +32,9 @@ var analyzer = function analyzerConstructor() {
  */
 analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
     
-    var stdoutOuputString = '';
-    var stderrOuputString = '';
-    
-    var trackData = {};
-    
     //console.log(trackPath);
+    
+    var that = this;
     
     // ffprobe file data
     var ffprobeSpawn = childProcessSpawn(
@@ -49,19 +56,19 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
     // ffprobe recieves data on stdout
     ffprobeSpawn.stdout.on('data', function(data) {
 
-        stdoutOuputString += data;
+        that.stdoutFfprobeOuputString += data;
         
     });
 
     ffprobeSpawn.stdout.on('end', function(data) {
 
         //console.log('ffprobeSpawn stdout end');
-        //console.log(stdoutOuputString);
+        //console.log(that.stdoutFfprobeOuputString);
 
-        if (stdoutOuputString !== '') {
+        if (that.stdoutFfprobeOuputString !== '') {
 
             // parse the ffprobe json string response
-            var stdoutOuput = JSON.parse(stdoutOuputString);
+            var stdoutOuput = JSON.parse(that.stdoutFfprobeOuputString);
             
             //console.log(stdoutOuput);
             //console.log(Object.keys(stdoutOuput).length);
@@ -69,15 +76,15 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
             if (Object.keys(stdoutOuput).length > 0) {
 
                 // create a trackdata object with the informations we need
-                trackData.duration = stdoutOuput['format']['duration'];
-                trackData.size = stdoutOuput['format']['size'];
-                trackData.bitRate = stdoutOuput['format']['bit_rate'];
-                trackData.sampleRate = stdoutOuput['streams'][0]['sample_rate'];
-                trackData.channels = stdoutOuput['streams'][0]['channels'];
+                that.trackData.duration = stdoutOuput['format']['duration'];
+                that.trackData.size = stdoutOuput['format']['size'];
+                that.trackData.bitRate = stdoutOuput['format']['bit_rate'];
+                that.trackData.sampleRate = stdoutOuput['streams'][0]['sample_rate'];
+                that.trackData.channels = stdoutOuput['streams'][0]['channels'];
                 
             }
             
-            //console.log(trackData);
+            //console.log(that.trackData);
 
         }
 
@@ -85,7 +92,7 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
 
     ffprobeSpawn.stderr.on('data', function(data) {
 
-        stderrOuputString += data;
+        that.stderrFfprobeOuputString += data;
 
     });
 
@@ -102,23 +109,23 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
         // if the code is an error code
         if (code > 0) {
             
-            if (stderrOuputString === '') {
+            if (that.stderrFfprobeOuputString === '') {
                 
-                stderrOuputString = 'unknown ffprobe error';
+                that.stderrFfprobeOuputString = 'unknown ffprobe error';
                 
             }
             
-            callback(stderrOuputString);
+            callback(that.stderrFfprobeOuputString);
             
         } else {
             
-            //console.log(trackData);
-            //console.log(Object.keys(trackData).length);
+            //console.log(that.trackData);
+            //console.log(Object.keys(that.trackData).length);
             
             // if the trackdata object isnt empty
-            if (Object.keys(trackData).length > 0) {
+            if (Object.keys(that.trackData).length > 0) {
                 
-                callback(false, trackData);
+                callback(false, that.trackData);
                 
             } else {
                 
@@ -165,6 +172,8 @@ analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
  */
 analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountRaw, callback) {
     
+    var that = this;
+    
     this.getData(trackPath, function(error, trackData) {
 
         if (!error) {
@@ -199,14 +208,9 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                     'pipe:1' // pipe to stdout
                 ]
             );
-
-            var stdoutOuputString = '';
-            var stderrOuputString = '';
             
             //ffmpegSpawn.stdout.setEncoding('utf8');
             ffmpegSpawn.stderr.setEncoding('utf8');
-            
-            var samples = [];
 
             ffmpegSpawn.stdout.on('data', function(buffer) {
                 
@@ -225,7 +229,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
                     var positiveSample = Math.abs(buffer.readInt16LE(i, false));
 
-                    samples.push(positiveSample);
+                    that.samples.push(positiveSample);
 
                 }
 
@@ -235,7 +239,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
                 //console.log('ffmpegSpawn stdout end');
                 
-                var samplesLength = samples.length;
+                var samplesLength = that.samples.length;
 
                 // check if we got enough samples to put at least one sample
                 // into each peak
@@ -244,7 +248,6 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                     // calculate how much samples we have to put into one peak
                     var samplesCountPerPeak = Math.floor(samplesLength / peaksAmount);
                     var peaks = [];
-                    var peaksInPercent = [];
 
                     var i;
                     var start = 0;
@@ -255,7 +258,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                     for (i = 0; i < peaksAmount; i++) {
                         
                         // get a series of samples collection
-                        var peaksGroup = samples.slice(start, end);
+                        var peaksGroup = that.samples.slice(start, end);
                         var x;
                         var samplesSum = 0;
                         var peaksGroupLength = peaksGroup.length;
@@ -289,31 +292,17 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
                         var peakInPercent = Math.round((peaks[y] / highestPeak) * 100);
 
-                        peaksInPercent.push(peakInPercent);
+                        that.peaksInPercent.push(peakInPercent);
 
                     }
-
-                    callback(false, peaksInPercent);
-
-                } else {
                     
-                    if (samplesLength === 0) {
-
-                        callback('no output recieved');
-                        
-                    } else if (samplesLength < peaksAmount) {
-                        
-                        callback('not enough peaks in this song for a full wave');
-                        
-                    }
-
                 }
 
             });
 
             ffmpegSpawn.stderr.on('data', function(data) {
 
-                //console.log(data.toString());
+                that.stderrFfprobeOuputString += data;
 
             });
 
@@ -325,7 +314,41 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
             ffmpegSpawn.on('exit', function(code) {
 
-                //console.log('ffmpegSpawn exit, code: ' + code);
+                if (code > 0) {
+            
+                    if (that.stderrFfmpegOuputString === '') {
+
+                        that.stderrFfmpegOuputString = 'unknown ffmpeg error';
+
+                    }
+
+                    callback(that.stderrFfmpegOuputString);
+
+                } else {
+                    
+                    var peaksInPercentLength = that.peaksInPercent.length;
+                    
+                    if (peaksInPercentLength > 0) {
+
+                        callback(false, that.peaksInPercent);
+
+                    } else {
+
+                        var samplesLength = that.samples.length;
+
+                        if (samplesLength === 0) {
+
+                            callback('no output recieved');
+
+                        } else if (samplesLength < peaksAmount) {
+
+                            callback('not enough peaks in this song for a full wave');
+
+                        }
+
+                    }
+                    
+                }
 
             });
 

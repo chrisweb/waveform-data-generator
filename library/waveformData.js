@@ -14,8 +14,21 @@ var queryObjectToOptions = function queryObjectToOptionsFunction(queryObject) {
         peaksAmount: queryObject.peaksAmount,
         method: 'GET',
         serverDirectory: queryObject.serverDirectory,
-        fileName: queryObject.trackId + '.' + queryObject.trackFormat
+        fileName: queryObject.trackId + '.' + queryObject.trackFormat,
+        service: queryObject.service
     };
+    
+    if (options.serverDirectory === undefined) {
+        
+        options.serverDirectory = './downloads';
+        
+    }
+    
+    if (options.service === undefined) {
+        
+        options.service = 'jamendo';
+        
+    }
     
     return options;
     
@@ -25,6 +38,8 @@ var analyzeAudio = function analyzeAudioFunction(filePath, options, callback) {
     
     // initialize the audioAnalyzer
     var audioDataAnalyzer = new AudioDataAnalyzer();
+    
+    //console.log(filePath);
 
     // analyze the track using ffmpeg
     audioDataAnalyzer.getPeaks(filePath, options.peaksAmount, function getValuesCallback(error, peaks) {
@@ -56,25 +71,30 @@ var getRemoteWaveData = function getRemoteWaveDataFunction(queryObject, callback
     
     // track options
     var options = queryObjectToOptions(queryObject);
-
-    // track format
-    switch(queryObject.trackFormat) {
-        case 'ogg':
-            options.formatCode = 'ogg1';
-            break;
-        default:
-            options.formatCode = 'mp31';
-    }
+    
+    //console.log(queryObject.trackFormat);
 
     // service options
-    if (queryObject.service === 'jamendo') {
+    switch(queryObject.service) {
+        
+        case 'jamendo':
+        default:
+        
+            // track format
+            switch(queryObject.trackFormat) {
+                case 'ogg':
+                    options.formatCode = 'ogg1';
+                    break;
+                default:
+                    options.formatCode = 'mp31';
+            }
 
-        options.remoteHost = 'storage-new.newjamendo.com';
-        options.remotePath = '/download/track/';
-        options.remotePort = 80;
-
+            options.remoteHost = 'storage-new.newjamendo.com';
+            options.remotePath = '/download/track/' + options.trackId + '/' + options.formatCode;
+            options.remotePort = 80;
+            
     }
-
+    
     // initialize the track downloader
     var fileDownloader = new FileDownloader();
 

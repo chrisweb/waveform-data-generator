@@ -29,15 +29,11 @@ var downloader = function downloaderConstructor() {
  */
 downloader.prototype.writeToDisc = function(options, callback) {
 
+    //console.log(options);
+
     if (options === undefined) {
         
         options = {};
-        
-    }
-
-    if (options.serverDirectory === undefined) {
-        
-        options.serverDirectory = './downloads';
         
     }
     
@@ -185,7 +181,7 @@ downloader.prototype.downloadFile = function downloadFileFunction(downloadOption
         var requestOptions = {
             hostname: downloadOptions.remoteHost,
             port: downloadOptions.remotePort,
-            path: downloadOptions.remotePath + downloadOptions.fileName,
+            path: downloadOptions.remotePath,
             method: downloadOptions.method
         };
         
