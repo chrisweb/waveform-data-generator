@@ -20,144 +20,179 @@ var analyzer = function analyzerConstructor() {
     
     this.trackData = {};
     
+    this.detectFormat = false;
+    
 };
 
 /**
  * 
- * get track data using ffprobe (channels, samplerate, ...)
+ * set detect format option
+ * 
+ * @param {type} detectFormat
+ * @returns {undefined}
+ */
+analyzer.prototype.setDetectFormat = function setDetectFormatFunction(detectFormat) {
+    
+    this.detectFormat = detectFormat;
+    
+};
+
+/**
+ * 
+ * get detect format option
+ * 
+ * @returns {undefined}
+ */
+analyzer.prototype.getDetectFormat = function getDetectFormatFunction() {
+    
+    return this.detectFormat;
+    
+};
+
+/**
+ * 
+ * get track format using ffprobe (channels, samplerate, ...)
  * 
  * @param {type} trackPath
  * @param {type} callback
  * @returns {undefined}
  */
-analyzer.prototype.getData = function getDataFunction(trackPath, callback) {
+analyzer.prototype.getFormat = function getFormatFunction(trackPath, callback) {
     
     //console.log(trackPath);
     
-    var that = this;
-    
-    // ffprobe file data
-    var ffprobeSpawn = childProcessSpawn(
-       'ffprobe',
-       [
-           trackPath,
-           '-v',
-           'quiet',
-           '-show_streams',
-           '-show_format',
-           '-print_format',
-           'json'
-       ]
-    );
-    
-    //ffprobeSpawn.stdout.setEncoding('utf8');
-    ffprobeSpawn.stderr.setEncoding('utf8');
+    if (this.detectFormat) {
 
-    // ffprobe recieves data on stdout
-    ffprobeSpawn.stdout.on('data', function(data) {
+        var that = this;
 
-        that.stdoutFfprobeOuputString += data;
-        
-    });
+        // ffprobe file data
+        var ffprobeSpawn = childProcessSpawn(
+           'ffprobe',
+           [
+               trackPath,
+               '-v',
+               'quiet',
+               '-show_streams',
+               '-show_format',
+               '-print_format',
+               'json'
+           ]
+        );
 
-    ffprobeSpawn.stdout.on('end', function(data) {
+        //ffprobeSpawn.stdout.setEncoding('utf8');
+        ffprobeSpawn.stderr.setEncoding('utf8');
 
-        //console.log('ffprobeSpawn stdout end');
-        //console.log(that.stdoutFfprobeOuputString);
+        // ffprobe recieves data on stdout
+        ffprobeSpawn.stdout.on('data', function(data) {
 
-        if (that.stdoutFfprobeOuputString !== '') {
+            that.stdoutFfprobeOuputString += data;
 
-            // parse the ffprobe json string response
-            var stdoutOuput = JSON.parse(that.stdoutFfprobeOuputString);
-            
-            //console.log(stdoutOuput);
-            //console.log(Object.keys(stdoutOuput).length);
-            
-            if (Object.keys(stdoutOuput).length > 0) {
+        });
 
-                // create a trackdata object with the informations we need
-                that.trackData.duration = stdoutOuput['format']['duration'];
-                that.trackData.size = stdoutOuput['format']['size'];
-                that.trackData.bitRate = stdoutOuput['format']['bit_rate'];
-                that.trackData.sampleRate = stdoutOuput['streams'][0]['sample_rate'];
-                that.trackData.channels = stdoutOuput['streams'][0]['channels'];
-                
+        ffprobeSpawn.stdout.on('end', function(data) {
+
+            //console.log('ffprobeSpawn stdout end');
+            //console.log(that.stdoutFfprobeOuputString);
+
+            if (that.stdoutFfprobeOuputString !== '') {
+
+                // parse the ffprobe json string response
+                var stdoutOuput = JSON.parse(that.stdoutFfprobeOuputString);
+
+                //console.log(stdoutOuput);
+                //console.log(Object.keys(stdoutOuput).length);
+
+                if (Object.keys(stdoutOuput).length > 0) {
+
+                    // create a trackdata object with the informations we need
+                    that.trackData.duration = stdoutOuput['format']['duration'];
+                    that.trackData.size = stdoutOuput['format']['size'];
+                    that.trackData.bitRate = stdoutOuput['format']['bit_rate'];
+                    that.trackData.sampleRate = stdoutOuput['streams'][0]['sample_rate'];
+                    that.trackData.channels = stdoutOuput['streams'][0]['channels'];
+
+                }
+
+                //console.log(that.trackData);
+
             }
-            
-            //console.log(that.trackData);
 
-        }
+        });
 
-    });
+        ffprobeSpawn.stderr.on('data', function(data) {
 
-    ffprobeSpawn.stderr.on('data', function(data) {
+            that.stderrFfprobeOuputString += data;
 
-        that.stderrFfprobeOuputString += data;
+        });
 
-    });
+        ffprobeSpawn.stderr.on('end', function() {
 
-    ffprobeSpawn.stderr.on('end', function() {
+            //console.log('ffprobeSpawn stderr end');
 
-        //console.log('ffprobeSpawn stderr end');
+        });
 
-    });
+        ffprobeSpawn.on('exit', function(code) {
 
-    ffprobeSpawn.on('exit', function(code) {
+            //console.log('ffprobeSpawn exit, code: ' + code);
 
-        //console.log('ffprobeSpawn exit, code: ' + code);
-        
-        // if the code is an error code
-        if (code > 0) {
-            
-            if (that.stderrFfprobeOuputString === '') {
-                
-                that.stderrFfprobeOuputString = 'unknown ffprobe error';
-                
-            }
-            
-            callback(that.stderrFfprobeOuputString);
-            
-        } else {
-            
-            //console.log(that.trackData);
-            //console.log(Object.keys(that.trackData).length);
-            
-            // if the trackdata object isnt empty
-            if (Object.keys(that.trackData).length > 0) {
-                
-                callback(false, that.trackData);
-                
+            // if the code is an error code
+            if (code > 0) {
+
+                if (that.stderrFfprobeOuputString === '') {
+
+                    that.stderrFfprobeOuputString = 'unknown ffprobe error';
+
+                }
+
+                callback(that.stderrFfprobeOuputString);
+
             } else {
-                
-                //console.log('ffprobe did not output any data');
-                
-                callback('ffprobe did not output any data');
-                
+
+                //console.log(that.trackData);
+                //console.log(Object.keys(that.trackData).length);
+
+                // if the trackdata object isnt empty
+                if (Object.keys(that.trackData).length > 0) {
+
+                    callback(false, that.trackData);
+
+                } else {
+
+                    //console.log('ffprobe did not output any data');
+
+                    callback('ffprobe did not output any data');
+
+                }
+
             }
-            
-        }
 
-    });
+        });
 
-    ffprobeSpawn.on('close', function() {
+        ffprobeSpawn.on('close', function() {
 
-        //console.log('ffprobeSpawn close');
+            //console.log('ffprobeSpawn close');
 
-    });
-    
-    ffprobeSpawn.on('error', function(error) {
+        });
 
-        if (error.code === 'ENOENT') {
+        ffprobeSpawn.on('error', function(error) {
 
-            callback('Unable to locate ffprobe, check it is installed and in the path');
-            
-        } else {
-            
-            callback(error.syscall + ' ' + error.errno);
-            
-        }
+            if (error.code === 'ENOENT') {
 
-    });
+                callback('Unable to locate ffprobe, check it is installed and in the path');
+
+            } else {
+
+                callback(error.syscall + ' ' + error.errno);
+
+            }
+
+        });
+        
+    } else {
+        
+        callback(false, null);
+        
+    }
     
 };
 
@@ -174,7 +209,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
     
     var that = this;
     
-    this.getData(trackPath, function(error, trackData) {
+    this.getFormat(trackPath, function(error, trackData) {
 
         if (!error) {
             
@@ -188,6 +223,15 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                 
             }
             
+            if (trackData === null) {
+            
+                trackData = {};
+            
+                trackData.sampleRate = 44100;
+                trackData.channels = 1;
+            
+            }
+            
             // get audio pcm as 16bit little endians
             var ffmpegSpawn = childProcessSpawn(
                 'ffmpeg',
@@ -197,9 +241,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                     '-f',
                     's16le',
                     '-ac',
-                    //trackData.channels,
-                    // put everything into one channel
-                    1,
+                    trackData.channels,
                     '-acodec',
                     'pcm_s16le',
                     '-ar',

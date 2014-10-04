@@ -15,7 +15,8 @@ var queryObjectToOptions = function queryObjectToOptionsFunction(queryObject) {
         method: 'GET',
         serverDirectory: queryObject.serverDirectory,
         fileName: queryObject.trackId + '.' + queryObject.trackFormat,
-        service: queryObject.service
+        service: queryObject.service,
+        detectFormat: queryObject.detectFormat
     };
     
     if (options.serverDirectory === undefined) {
@@ -30,6 +31,12 @@ var queryObjectToOptions = function queryObjectToOptionsFunction(queryObject) {
         
     }
     
+    if (options.detectFormat === undefined) {
+        
+        options.detectFormat = false;
+        
+    }
+    
     return options;
     
 };
@@ -39,8 +46,10 @@ var analyzeAudio = function analyzeAudioFunction(filePath, options, callback) {
     // initialize the audioAnalyzer
     var audioDataAnalyzer = new AudioDataAnalyzer();
     
+    audioDataAnalyzer.setDetectFormat(options.detectFormat);
+    
     //console.log(filePath);
-
+    
     // analyze the track using ffmpeg
     audioDataAnalyzer.getPeaks(filePath, options.peaksAmount, function getValuesCallback(error, peaks) {
 
