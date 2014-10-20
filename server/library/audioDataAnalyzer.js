@@ -1,4 +1,11 @@
 
+/**
+ * audio data analyzer
+ *
+ * credits: inspired by https://github.com/jhurliman/node-pcm
+ *
+ */
+
 // nodejs child_process
 var childProcessSpawn = require('child_process').spawn;
 

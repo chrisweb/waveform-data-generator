@@ -1,0 +1,28 @@
+{
+  "name": "waveform-data-generator",
+  "version": "0.0.1",
+  "description": "nodejs (ffmpeg) waveform data (peaks) generator",
+  "main": "server.js",
+  "scripts": {
+    "test": "none yet"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:chrisweb/waveform-data-generator.git"
+  },
+  "keywords": [
+    "waveform",
+    "nodejs",
+    "javascript",
+    "data",
+    "generator",
+    "peaks",
+	"ffmpeg"
+  ],
+  "author": "Chris Weber (chrisweb) <chris963@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chrisweb/waveform-data-generator/issues"
+  },
+  "homepage": "https://github.com/chrisweb/waveform-data-generator"
+}
