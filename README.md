@@ -36,3 +36,8 @@ Parameters:
 * The fifth parameter "local" tells the script if the file is already on your local machine, use "jamendo" to download the file from jamendo and store it the downloads directory
 * The sixth parameter "json" is the type of output you want, the peaks can get outputted in either json or as a string
 * The seventh parameter tells the script if it should use ffprobe to detect the track format (number of channels, the sampling frequency, ...) or use default values
+
+TODOs
+-----
+
+Create a client side waveform data generator using the web audio API (http://www.w3.org/TR/webaudio/)
