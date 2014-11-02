@@ -1,7 +1,11 @@
 waveform-data-generator
 =======================
 
-Generates code that can then get visualized using: https://github.com/chrisweb/waveform-visualizer
+Generates waveform data (peaks) that can then get visualized using: https://github.com/chrisweb/waveform-visualizer
+
+![](https://github.com/chrisweb/waveform-visualizer/blob/master/examples/images/waveform.png)
+
+Waveform created using the visualizer with data from waveform data generator
 
 Getting started
 ---------------
@@ -40,4 +44,5 @@ Parameters:
 TODOs
 -----
 
-Create a client side waveform data generator using the web audio API (http://www.w3.org/TR/webaudio/)
+ * fix memory problems for big audio files
+ * Create a client side waveform data generator using the web audio API (http://www.w3.org/TR/webaudio/)
