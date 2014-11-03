@@ -1,5 +1,6 @@
 
 /**
+ * 
  * audio data analyzer
  *
  * credits: inspired by https://github.com/jhurliman/node-pcm
@@ -8,6 +9,8 @@
 
 // nodejs child_process
 var childProcessSpawn = require('child_process').spawn;
+
+var util = require('util');
 
 /**
  * 
@@ -28,6 +31,26 @@ var analyzer = function analyzerConstructor() {
     this.trackData = {};
     
     this.detectFormat = false;
+    
+    this.logMemory = false;
+    
+};
+
+/**
+ * 
+ * printMemory
+ * 
+ * @returns {undefined}
+ */
+analyzer.prototype.printMemory = function printMemoryFunction() {
+    
+    if (this.logMemory) {
+    
+        var memoryData = process.memoryUsage();
+
+        console.log('rss: ' + memoryData.rss/1000000 + ', heapTotal: ' + memoryData.heapTotal/1000000 + ', heapUsed: ' + memoryData.heapUsed/1000000);
+    
+    }
     
 };
 
@@ -216,6 +239,8 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
     
     var that = this;
     
+    this.printMemory();
+    
     this.getFormat(trackPath, function(error, trackData) {
 
         if (!error) {
@@ -229,6 +254,8 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                 callback('peaksAmount is undefined');
                 
             }
+            
+            that.printMemory();
             
             if (trackData === null) {
             
@@ -269,6 +296,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                 // and we convert them to signed 16-bit little endians
                 // http://nodejs.org/api/buffer.html#buffer_buf_readint16le_offset_noassert
                 
+                that.printMemory();
                 
                 var i;
                 var dataLen = buffer.length;
@@ -281,6 +309,8 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                     that.samples.push(positiveSample);
 
                 }
+                
+                that.printMemory();
 
             });
 
@@ -302,6 +332,8 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                     var start = 0;
                     var end = start + samplesCountPerPeak;
                     var highestPeak = 0;
+
+                    that.printMemory();
 
                     // build as much peaks as got requested
                     for (i = 0; i < peaksAmount; i++) {
@@ -333,6 +365,8 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
                     }
                     
+                    that.printMemory();
+                    
                     var y;
                     var peaksLength = peaks.length;
 
@@ -344,6 +378,8 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                         that.peaksInPercent.push(peakInPercent);
 
                     }
+                    
+                    that.printMemory();
                     
                 }
 
