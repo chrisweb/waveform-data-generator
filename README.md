@@ -31,6 +31,19 @@ Use the command line tool
 * Type: node cli PARAMETER_1 PARAMETER_2 (...)
 * For example: node cli ./downloads 1100511 ogg 200 local json false
 
+Out of memory:
+--------------
+
+Error "FATAL ERROR: JS Allocation failed - process out of memory"
+
+If the file you want to parse is too big, try increasing the memory limit of your node process, like this:
+
+node --max-old-space-size=1900 cli ./downloads 1100511 ogg 200 local json false
+
+If you still run out of memory try to reduce the sample rate by passing custom values as seventh parameter, for example if the song sample rate is 44100 but runs out of memory, then try again with 22050, like this:
+
+node --max-old-space-size=1900 cli ./downloads 1100511 ogg 200 local json sr=22050
+
 Parameters:
 
 * The first parameter "./downloads" is the repository where you want the audio files to get stored

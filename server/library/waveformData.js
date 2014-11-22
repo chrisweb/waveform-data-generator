@@ -48,8 +48,6 @@ var analyzeAudio = function analyzeAudioFunction(filePath, options, callback) {
     
     audioDataAnalyzer.setDetectFormat(options.detectFormat);
     
-    //console.log(filePath);
-    
     // analyze the track using ffmpeg
     audioDataAnalyzer.getPeaks(filePath, options.peaksAmount, function getValuesCallback(error, peaks) {
 
@@ -81,8 +79,6 @@ var getRemoteWaveData = function getRemoteWaveDataFunction(queryObject, callback
     // track options
     var options = queryObjectToOptions(queryObject);
     
-    //console.log(queryObject.trackFormat);
-
     // service options
     switch(queryObject.service) {
         

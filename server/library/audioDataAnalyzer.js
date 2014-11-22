@@ -40,15 +40,17 @@ var analyzer = function analyzerConstructor() {
  * 
  * printMemory
  * 
+ * @param {type} options
+ * 
  * @returns {undefined}
  */
-analyzer.prototype.printMemory = function printMemoryFunction() {
+analyzer.prototype.printMemory = function printMemoryFunction(options) {
     
     if (this.logMemory) {
     
         var memoryData = process.memoryUsage();
 
-        console.log('rss: ' + memoryData.rss/1000000 + ', heapTotal: ' + memoryData.heapTotal/1000000 + ', heapUsed: ' + memoryData.heapUsed/1000000);
+        console.log('rss: ' + memoryData.rss/1000000 + ', heapTotal: ' + memoryData.heapTotal/1000000 + ', heapUsed: ' + memoryData.heapUsed/1000000 + ', options: ' + JSON.stringify(options));
     
     }
     
@@ -88,10 +90,8 @@ analyzer.prototype.getDetectFormat = function getDetectFormatFunction() {
  * @returns {undefined}
  */
 analyzer.prototype.getFormat = function getFormatFunction(trackPath, callback) {
-    
-    //console.log(trackPath);
-    
-    if (this.detectFormat) {
+
+    if (this.detectFormat === true) {
 
         var that = this;
 
@@ -109,7 +109,7 @@ analyzer.prototype.getFormat = function getFormatFunction(trackPath, callback) {
            ]
         );
 
-        //ffprobeSpawn.stdout.setEncoding('utf8');
+        ffprobeSpawn.stdout.setEncoding('utf8');
         ffprobeSpawn.stderr.setEncoding('utf8');
 
         // ffprobe recieves data on stdout
@@ -121,16 +121,10 @@ analyzer.prototype.getFormat = function getFormatFunction(trackPath, callback) {
 
         ffprobeSpawn.stdout.on('end', function(data) {
 
-            //console.log('ffprobeSpawn stdout end');
-            //console.log(that.stdoutFfprobeOuputString);
-
             if (that.stdoutFfprobeOuputString !== '') {
 
                 // parse the ffprobe json string response
                 var stdoutOuput = JSON.parse(that.stdoutFfprobeOuputString);
-
-                //console.log(stdoutOuput);
-                //console.log(Object.keys(stdoutOuput).length);
 
                 if (Object.keys(stdoutOuput).length > 0) {
 
@@ -142,8 +136,6 @@ analyzer.prototype.getFormat = function getFormatFunction(trackPath, callback) {
                     that.trackData.channels = stdoutOuput['streams'][0]['channels'];
 
                 }
-
-                //console.log(that.trackData);
 
             }
 
@@ -163,8 +155,6 @@ analyzer.prototype.getFormat = function getFormatFunction(trackPath, callback) {
 
         ffprobeSpawn.on('exit', function(code) {
 
-            //console.log('ffprobeSpawn exit, code: ' + code);
-
             // if the code is an error code
             if (code > 0) {
 
@@ -178,17 +168,12 @@ analyzer.prototype.getFormat = function getFormatFunction(trackPath, callback) {
 
             } else {
 
-                //console.log(that.trackData);
-                //console.log(Object.keys(that.trackData).length);
-
                 // if the trackdata object isnt empty
                 if (Object.keys(that.trackData).length > 0) {
 
                     callback(false, that.trackData);
 
                 } else {
-
-                    //console.log('ffprobe did not output any data');
 
                     callback('ffprobe did not output any data');
 
@@ -239,7 +224,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
     
     var that = this;
     
-    this.printMemory();
+    this.printMemory({'file': 'audioDataAnalyzer', 'line': '242'});
     
     this.getFormat(trackPath, function(error, trackData) {
 
@@ -255,13 +240,22 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                 
             }
             
-            that.printMemory();
+            that.printMemory({'file': 'audioDataAnalyzer', 'line': '258'});
             
             if (trackData === null) {
             
                 trackData = {};
             
-                trackData.sampleRate = 44100;
+                if(typeof that.detectFormat === 'number'){
+            
+                    trackData.sampleRate = that.detectFormat;
+                    
+                } else {
+                    
+                    trackData.sampleRate = 44100;
+                    
+                }
+                    
                 trackData.channels = 1;
             
             }
@@ -296,7 +290,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                 // and we convert them to signed 16-bit little endians
                 // http://nodejs.org/api/buffer.html#buffer_buf_readint16le_offset_noassert
                 
-                that.printMemory();
+                that.printMemory({'file': 'audioDataAnalyzer', 'line': '299'});
                 
                 var i;
                 var dataLen = buffer.length;
@@ -310,7 +304,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
                 }
                 
-                that.printMemory();
+                that.printMemory({'file': 'audioDataAnalyzer', 'line': '313'});
 
             });
 
@@ -333,7 +327,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
                     var end = start + samplesCountPerPeak;
                     var highestPeak = 0;
 
-                    that.printMemory();
+                    that.printMemory({'file': 'audioDataAnalyzer', 'line': '336'});
 
                     // build as much peaks as got requested
                     for (i = 0; i < peaksAmount; i++) {
@@ -365,7 +359,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
                     }
                     
-                    that.printMemory();
+                    that.printMemory({'file': 'audioDataAnalyzer', 'line': '368'});
                     
                     var y;
                     var peaksLength = peaks.length;
@@ -379,7 +373,7 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
                     }
                     
-                    that.printMemory();
+                    that.printMemory({'file': 'audioDataAnalyzer', 'line': '382'});
                     
                 }
 

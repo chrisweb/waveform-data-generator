@@ -61,10 +61,16 @@ process.argv.forEach(function (value, index, array) {
         } else {
             
             var detectFormat = value.toLowerCase();
-            
+
             if (detectFormat === 'true') {
                 
                 queryObject.detectFormat = true;
+                
+            } else if (detectFormat.substr(0,2) === 'sr') {
+                
+                var splittedDetectFormat = detectFormat.split('=');
+                
+                queryObject.detectFormat = parseInt(splittedDetectFormat[1]);
                 
             } else {
                 
