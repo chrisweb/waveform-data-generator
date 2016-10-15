@@ -1,0 +1,32 @@
+{
+  "name": "web-audio-api-player",
+  "version": "0.0.1",
+  "description": "web audio api player",
+  "homepage": "https://github.com/chrisweb/web-audio-api-player",
+  "authors": [
+    "Chris Weber (chrisweb) <chris963@gmail.com>"
+  ],
+  "main": "source/player.js",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "player",
+    "javascript",
+    "web",
+    "audio",
+    "api"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.1",
+    "requirejs": "~2.1.15"
+  }
+}
