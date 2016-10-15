@@ -30,7 +30,7 @@ directoryManager.prototype.exists = function directoryExistsFunction(directory, 
             // async exists
             fs.exists(directory, function(exists) {
 
-                callback(false, exists);
+                callback(null, exists);
 
             });
             
@@ -74,7 +74,7 @@ directoryManager.prototype.create = function createDirectoryFunction(directory, 
 
             if (!error) {
 
-                callback(false);
+                callback(null);
 
             } else {
 

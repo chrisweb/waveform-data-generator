@@ -113,7 +113,7 @@ downloader.prototype.downloadIfNotExists = function downloadIfNotExists(options,
                 
             } else {
                 
-                callback(false, filePath);
+                callback(null, filePath);
                 
             }
             
@@ -209,7 +209,7 @@ downloader.prototype.downloadFile = function downloadFileFunction(downloadOption
                 // close the write stream
                 writeStream.end();
 
-                callback(false, serverFilePath);
+                callback(null, serverFilePath);
 
             });
 

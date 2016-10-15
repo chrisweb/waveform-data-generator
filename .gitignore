@@ -12,17 +12,22 @@ lib-cov
 pids
 results
 
+# npm
 npm-debug.log
+
+# windows 
 Thumbs.db
 desktop.ini
 
+# third party libraries
 node_modules
-downloads
-yeoman
-nbproject
-.sass-cache
+vendor
 
-downloads
-client_build
-
-configuration.js
+# IDEs
+nbproject/private
+.vs
+*.user
+.ntvs_analysis.dat
+.ntvs_analysis.dat.tmp
+*.njsperf
+Output-Npm.txt

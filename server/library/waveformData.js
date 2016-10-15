@@ -10,33 +10,16 @@ var queryObjectToOptions = function queryObjectToOptionsFunction(queryObject) {
     
     var options = {
         trackId: queryObject.trackId,
-        trackFormat: queryObject.trackFormat,
-        peaksAmount: queryObject.peaksAmount,
+        trackFormat: queryObject.trackFormat || 'ogg',
+        peaksAmount: queryObject.peaksAmount || 200,
         method: 'GET',
-        serverDirectory: queryObject.serverDirectory,
-        fileName: queryObject.trackId + '.' + queryObject.trackFormat,
-        service: queryObject.service,
-        detectFormat: queryObject.detectFormat
+        serverDirectory: queryObject.serverDirectory || './downloads',
+        service: queryObject.service || 'jamendo',
+        detectFormat: queryObject.detectFormat || false
     };
     
-    if (options.serverDirectory === undefined) {
-        
-        options.serverDirectory = './downloads';
-        
-    }
-    
-    if (options.service === undefined) {
-        
-        options.service = 'jamendo';
-        
-    }
-    
-    if (options.detectFormat === undefined) {
-        
-        options.detectFormat = false;
-        
-    }
-    
+    options.fileName = options.trackId + '.' + options.trackFormat;
+
     return options;
     
 };
@@ -54,7 +37,7 @@ var analyzeAudio = function analyzeAudioFunction(filePath, options, callback) {
         // if there was no error analyzing the track
         if (!error) {
 
-            callback(false, peaks);
+            callback(null, peaks);
 
         } else {
 
@@ -79,45 +62,53 @@ var getRemoteWaveData = function getRemoteWaveDataFunction(queryObject, callback
     // track options
     var options = queryObjectToOptions(queryObject);
     
-    // service options
-    switch(queryObject.service) {
+    if (typeof options.trackId !== 'undefined') {
+
+        // service options
+        switch (queryObject.service) {
         
-        case 'jamendo':
-        default:
+            case 'jamendo':
+            default:
+                
+                // track format
+                switch (queryObject.trackFormat) {
+                    case 'ogg':
+                        options.formatCode = 'ogg1';
+                        break;
+                    default:
+                        options.formatCode = 'mp31';
+                }
+                
+                options.remoteHost = 'storage-new.newjamendo.com';
+                options.remotePath = '/download/track/' + options.trackId + '/' + options.formatCode;
+                options.remotePort = 80;
+            
+        }
         
-            // track format
-            switch(queryObject.trackFormat) {
-                case 'ogg':
-                    options.formatCode = 'ogg1';
-                    break;
-                default:
-                    options.formatCode = 'mp31';
+        // initialize the track downloader
+        var fileDownloader = new FileDownloader();
+        
+        // download the track and write it on the disc of it does not already exist
+        fileDownloader.writeToDisc(options, function writeFileCallback(error, filePath) {
+            
+            // if there was no error downloading and writing the track
+            if (!error) {
+                
+                analyzeAudio(filePath, options, callback);
+
+            } else {
+                
+                callback(error);
+
             }
 
-            options.remoteHost = 'storage-new.newjamendo.com';
-            options.remotePath = '/download/track/' + options.trackId + '/' + options.formatCode;
-            options.remotePort = 80;
-            
+        });
+
+    } else {
+
+        callback('please specify at least a trackId');
+
     }
-    
-    // initialize the track downloader
-    var fileDownloader = new FileDownloader();
-
-    // download the track and write it on the disc of it does not already exist
-    fileDownloader.writeToDisc(options, function writeFileCallback(error, filePath) {
-
-        // if there was no error downloading and writing the track
-        if (!error) {
-
-            analyzeAudio(filePath, options, callback);
-
-        } else {
-
-            callback(error);
-
-        }
-
-    });
     
 };
 

@@ -8,8 +8,10 @@ var querystring = require('querystring');
 
 var waveformData = require('./library/waveformData');
 
-var serverPort = 35000;
-var serverIp = '127.0.0.1';
+var marked = require('marked');
+
+var serverPort = process.env.PORT || 35000;
+var serverIp = process.env.HOSTNAME || '127.0.0.1';
 
 /**
  * 
@@ -18,12 +20,10 @@ var serverIp = '127.0.0.1';
  * @param {type} request
  * @param {type} response
  */
-http.createServer(function (request, response) {
+var server = http.createServer(function (request, response) {
     
     // parse the url
     var urlParts = url.parse(request.url);
-    
-    //console.log(urlParts);
     
     // check if its is the url of a javascript file
     if (urlParts.pathname.split('.').pop() === 'js') {
@@ -31,7 +31,7 @@ http.createServer(function (request, response) {
         // if the file exists send it to the client
         // not really secure but this is a prototype
         // TODO: filter the file request
-        fs.readFile('client' + urlParts.pathname, function(error, fileContent) {
+        fs.readFile('client' + urlParts.pathname, function (error, fileContent) {
             
             if (!error) {
                 
@@ -52,14 +52,14 @@ http.createServer(function (request, response) {
         });
         
     } else {
-
+        
         // handle the "routes"
-        switch(urlParts.pathname) {
+        switch (urlParts.pathname) {
             case '/':
-                fs.readFile('client/index.html', function(error, html) {
+                /*fs.readFile('client/index.html', function (error, html) {
                     
                     if (!error) {
-                    
+                        
                         // send the main html page to the client
                         response.writeHead(200, { 'Content-Type': 'text/html' });
                         response.write(html);
@@ -75,15 +75,37 @@ http.createServer(function (request, response) {
                         
                     }
                         
+                });*/
+
+                fs.readFile('README.md', 'utf-8', function (error, document) {
+                    
+                    if (!error) {
+                        
+                        // send the main html page to the client
+                        response.writeHead(200, { 'Content-Type': 'text/html' });
+                        response.write(marked(document));
+                        response.end();
+                        
+                    } else {
+                        
+                        // the main page could not be found return a page not
+                        // found message
+                        response.writeHead(404, { 'Content-Type': 'text/html' });
+                        response.write('page not found');
+                        response.end();
+                        
+                    }
+                        
                 });
+
                 break;
             case '/getwavedata':
                 
                 var queryObject = querystring.parse(urlParts.query);
                 
                 if (typeof queryObject !== 'undefined') {
-
-                    waveformData.getRemoteWaveData(queryObject, function(error, peaks) {
+                    
+                    waveformData.getRemoteWaveData(queryObject, function (error, peaks) {
                         
                         if (!error) {
                             
@@ -113,11 +135,11 @@ http.createServer(function (request, response) {
                 //console.log(queryObject);
                 
                 if (typeof queryObject !== 'undefined' && queryObject.trackId !== 'undefined' && queryObject.trackFormat !== 'undefined') {
-
+                    
                     var trackName = queryObject.trackId + '.' + queryObject.trackFormat;
                     
                     if (queryObject.serverDirectory === undefined) {
-
+                        
                         queryObject.serverDirectory = './downloads';
 
                     }
@@ -125,10 +147,10 @@ http.createServer(function (request, response) {
                     var trackPath = queryObject.serverDirectory + '/' + trackName;
                     
                     var fileStat = fs.statSync(trackPath);
-
+                    
                     var mimeType;
-
-                    switch(queryObject.trackFormat) {
+                    
+                    switch (queryObject.trackFormat) {
                         case 'ogg':
                             mimeType = 'audio/ogg';
                             break;
@@ -136,9 +158,9 @@ http.createServer(function (request, response) {
                             mimeType = 'audio/mpeg';
                             break;
                     }
-
+                    
                     response.writeHead(200, { 'Content-Type': mimeType, 'Content-Length': fileStat.size });
-
+                    
                     var readStream = fs.createReadStream(trackPath);
                     
                     readStream.pipe(response);
@@ -154,6 +176,10 @@ http.createServer(function (request, response) {
         }
     }
     
-}).listen(serverPort, serverIp);
+});
 
-console.log('server is listening, ip: ' + serverIp + ', port: ' + serverPort);
+server.listen(serverPort, serverIp, function () {
+
+    console.log('server is listening, ip: ' + serverIp + ', port: ' + serverPort);
+
+});

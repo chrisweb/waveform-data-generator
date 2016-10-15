@@ -171,7 +171,7 @@ analyzer.prototype.getFormat = function getFormatFunction(trackPath, callback) {
                 // if the trackdata object isnt empty
                 if (Object.keys(that.trackData).length > 0) {
 
-                    callback(false, that.trackData);
+                    callback(null, that.trackData);
 
                 } else {
 
@@ -205,7 +205,7 @@ analyzer.prototype.getFormat = function getFormatFunction(trackPath, callback) {
         
     } else {
         
-        callback(false, null);
+        callback(null, this.trackData);
         
     }
     
@@ -242,11 +242,9 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
             
             that.printMemory({'file': 'audioDataAnalyzer', 'line': '258'});
             
-            if (trackData === null) {
-            
-                trackData = {};
-            
-                if(typeof that.detectFormat === 'number'){
+            if (Object.keys(trackData).length === 0 && trackData.constructor === Object) {
+
+                if (typeof that.detectFormat === 'number') {
             
                     trackData.sampleRate = that.detectFormat;
                     
@@ -310,8 +308,6 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
 
             ffmpegSpawn.stdout.on('end', function(data) {
 
-                //console.log('ffmpegSpawn stdout end');
-                
                 var samplesLength = that.samples.length;
 
                 // check if we got enough samples to put at least one sample
@@ -392,42 +388,49 @@ analyzer.prototype.getPeaks = function getValuesFunction(trackPath, peaksAmountR
             });
 
             ffmpegSpawn.on('exit', function(code) {
-
-                if (code > 0) {
-            
-                    if (that.stderrFfmpegOuputString === '') {
-
-                        that.stderrFfmpegOuputString = 'unknown ffmpeg error';
-
-                    }
-
-                    callback(that.stderrFfmpegOuputString);
-
-                } else {
+                
+                // under heavy load it seems that sometimes ffmpegSpawn.on('exit') gets called 
+                // before ffmpegSpawn.stdout.on('end') got called
+                // so we now wait 200ms before trying to read the peaks
+                setTimeout(function () {
                     
-                    var peaksInPercentLength = that.peaksInPercent.length;
-                    
-                    if (peaksInPercentLength > 0) {
-
-                        callback(false, that.peaksInPercent);
-
-                    } else {
-
-                        var samplesLength = that.samples.length;
-
-                        if (samplesLength === 0) {
-
-                            callback('no output recieved');
-
-                        } else if (samplesLength < peaksAmount) {
-
-                            callback('not enough peaks in this song for a full wave');
+                    if (code > 0) {
+                        
+                        if (that.stderrFfmpegOuputString === '') {
+                            
+                            that.stderrFfmpegOuputString = 'unknown ffmpeg error';
 
                         }
+                        
+                        callback(that.stderrFfmpegOuputString);
 
-                    }
+                    } else {
+                        
+                        var peaksInPercentLength = that.peaksInPercent.length;
+                        
+                        if (peaksInPercentLength > 0) {
+                            
+                            callback(null, that.peaksInPercent);
+
+                        } else {
+                            
+                            var samplesLength = that.samples.length;
+                            
+                            if (samplesLength === 0) {
+                                
+                                callback('no output recieved');
+
+                            } else if (samplesLength < peaksAmount) {
+                                
+                                callback('not enough peaks in this song for a full wave');
+
+                            }
+
+                        }
                     
-                }
+                    }
+
+                }, 200);
 
             });
 

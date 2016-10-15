@@ -30,7 +30,7 @@ fileManager.prototype.exists = function fileExistsFunction(file, callback) {
             // async exists
             fs.exists(file, function(exists) {
 
-                callback(false, exists);
+                callback(null, exists);
 
             });
             
