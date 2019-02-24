@@ -8,7 +8,7 @@ Waveform created using the visualizer with data from waveform data generator
 
 ## Getting started
 
-* Install git and then do a local checkout of this project
+* Install git and then do a local clone of this project
 * First, start by installing nodejs (http://nodejs.org/) (which includes npm) to run the server or use the cli tool
 * update npm to ensure you have the latest version installed
 ```npm install npm -g```
