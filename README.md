@@ -31,7 +31,7 @@ Waveform created using the visualizer with data from waveform data generator
 ### Cli Options (Parameters)
 
 * The first parameter "./downloads" is the repository where you want the audio files to get stored
-* The second parameter "1100511" is the ID (also filename) of the track
+* The second parameter "1100511" is the filename of the track (in my example the filename is the track ID)
 * The third parameter "ogg" is the audio file format (also file exntension) of the track (ogg / mp3)
 * The fourth parameter "200" is the amount of peaks you want to get
 * The fifth parameter "local" tells the script if the file is already on your local machine, use "jamendo" to download the file from jamendo and store it the downloads directory
