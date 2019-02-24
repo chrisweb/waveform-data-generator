@@ -1,6 +1,6 @@
 {
   "name": "waveform-data-generator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "nodejs (ffmpeg) waveform data (peaks) generator",
   "main": "server.js",
   "scripts": {
@@ -27,6 +27,6 @@
   },
   "homepage": "https://github.com/chrisweb/waveform-data-generator",
   "dependencies": {
-    "marked": "0.3.5"
+    "marked": "0.6.1"
   }
 }
