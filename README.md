@@ -11,9 +11,8 @@ Waveform created using the visualizer with data from waveform data generator
 * Install git and then do a local clone of this project
 * First, start by installing nodejs (http://nodejs.org/) (which includes npm) to run the server or use the cli tool
 * update npm to ensure you have the latest version installed
-```npm install npm -g```
+```npm i -g npm@latest```
 * Now install ffmeg package based on your operating system (https://www.ffmpeg.org/download.html) (and if you develop in windows add it to your path: http://www.wikihow.com/Install-FFmpeg-on-Windows)
-* Do a local checkout of this project using git
 * Use your command line tool and go to the root of this project (type: cd /LOCAL_PROJECT_PATH)
 * type: npm install, to install the required nodejs modules (dependencies)
 
