@@ -53,7 +53,7 @@ Waveform created using the visualizer with data from waveform data generator
 * service: the audio file provider you want to get the track from (you can use 'local' if the file is already in your server directory) [default jamendo]
 * detectFormat: tells the script if it should use ffprobe to detect the track format (number of channels, the sampling frequency, ...) or use default values (true or false) [default false]
 
-Out of memory:
+🚨 Out of memory:
 --------------
 
 Error "FATAL ERROR: JS Allocation failed - process out of memory"  
