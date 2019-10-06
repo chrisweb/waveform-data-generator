@@ -1,33 +1,9 @@
-lib-cov
-*.seed
-*.log
-*.csv
-*.dat
-*.out
-*.pid
-*.gz
-
-.DS_Store
-
-pids
-results
-
-# npm
-npm-debug.log
-
-# windows 
-Thumbs.db
-desktop.ini
-
-# third party libraries
+.DS_STORE
 node_modules
-vendor
 
-# IDEs
-nbproject/private
-.vs
-*.user
-.ntvs_analysis.dat
-.ntvs_analysis.dat.tmp
-*.njsperf
-Output-Npm.txt
+# Logs
+logs
+*.log
+
+# rollup-plugin-typescript2
+.rpt2_cache
