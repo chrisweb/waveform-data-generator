@@ -27,6 +27,6 @@
   },
   "homepage": "https://github.com/chrisweb/waveform-data-generator",
   "dependencies": {
-    "marked": "0.6.1"
+    "marked": "0.7.0"
   }
 }
