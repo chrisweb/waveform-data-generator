@@ -1,14 +1,11 @@
-var AudioDataAnalyzer = require('./audioDataAnalyzer').analyzer;
+import AudioDataAnalyzer from './audioDataAnalyzer.js'
+import FileDownloader from './fileDownloader.js'
+import DirectoryManager from './directoryManager.js'
+import FileManager from './fileManager.js'
 
-var FileDownloader = require('./fileDownloader').downloader;
+const queryObjectToOptions = function queryObjectToOptionsFunction(queryObject) {
 
-var DirectoryManager = require('./directoryManager').directoryManager;
-
-var FileManager = require('./fileManager').fileManager;
-
-var queryObjectToOptions = function queryObjectToOptionsFunction(queryObject) {
-    
-    var options = {
+    const options = {
         trackId: queryObject.trackId,
         trackFormat: queryObject.trackFormat || 'ogg',
         peaksAmount: queryObject.peaksAmount || 200,
@@ -16,38 +13,34 @@ var queryObjectToOptions = function queryObjectToOptionsFunction(queryObject) {
         serverDirectory: queryObject.serverDirectory || './downloads',
         service: queryObject.service || 'jamendo',
         detectFormat: queryObject.detectFormat || false
-    };
-    
-    options.fileName = options.trackId + '.' + options.trackFormat;
+    }
 
-    return options;
-    
-};
+    options.fileName = options.trackId + '.' + options.trackFormat
 
-var analyzeAudio = function analyzeAudioFunction(filePath, options, callback) {
-    
+    return options
+
+}
+
+const analyzeAudio = function analyzeAudioFunction(filePath, options, callback) {
+
     // initialize the audioAnalyzer
-    var audioDataAnalyzer = new AudioDataAnalyzer();
-    
-    audioDataAnalyzer.setDetectFormat(options.detectFormat);
-    
+    const audioDataAnalyzer = new AudioDataAnalyzer()
+
+    audioDataAnalyzer.setDetectFormat(options.detectFormat)
+
     // analyze the track using ffmpeg
     audioDataAnalyzer.getPeaks(filePath, options.peaksAmount, function getValuesCallback(error, peaks) {
 
         // if there was no error analyzing the track
         if (!error) {
-
-            callback(null, peaks);
-
+            callback(null, peaks)
         } else {
-
-            callback(error);
-
+            callback(error)
         }
 
-    });
-    
-};
+    })
+
+}
 
 /**
  * 
@@ -57,60 +50,61 @@ var analyzeAudio = function analyzeAudioFunction(filePath, options, callback) {
  * @param {type} callback
  * @returns {undefined}
  */
-var getRemoteWaveData = function getRemoteWaveDataFunction(queryObject, callback) {
-    
+const getRemoteWaveData = function getRemoteWaveDataFunction(queryObject, callback) {
+
     // track options
-    var options = queryObjectToOptions(queryObject);
-    
+    const options = queryObjectToOptions(queryObject)
+
     if (typeof options.trackId !== 'undefined') {
 
         // service options
         switch (queryObject.service) {
-        
+
             case 'jamendo':
             default:
-                
+
                 // track format
                 switch (queryObject.trackFormat) {
                     case 'ogg':
-                        options.formatCode = 'ogg1';
-                        break;
+                        // format code seems to have changed (as of 31.12.2022)
+                        //options.formatCode = 'ogg1'
+                        options.formatCode = 'ogg'
+                        break
                     default:
-                        options.formatCode = 'mp31';
+                        options.formatCode = 'mp31'
+                        // there also seems to be another format called mp32 but files seem to be identical
+                        // example: https://prod-1.storage.jamendo.com/download/track/1886257/mp32/
+                        //options.formatCode = 'mp32'
                 }
-                
-                options.remoteHost = 'storage-new.newjamendo.com';
-                options.remotePath = '/download/track/' + options.trackId + '/' + options.formatCode;
-                options.remotePort = 80;
-            
+
+                // old server seems to be gone (as of 31.12.2022)
+                //options.remoteHost = 'storage-new.newjamendo.com'
+                // new download server:
+                options.remoteHost = 'prod-1.storage.jamendo.com'
+                options.remotePath = '/download/track/' + options.trackId + '/' + options.formatCode
+
         }
-        
+
         // initialize the track downloader
-        var fileDownloader = new FileDownloader();
-        
+        const fileDownloader = new FileDownloader()
+
         // download the track and write it on the disc of it does not already exist
         fileDownloader.writeToDisc(options, function writeFileCallback(error, filePath) {
-            
+
             // if there was no error downloading and writing the track
             if (!error) {
-                
-                analyzeAudio(filePath, options, callback);
-
+                analyzeAudio(filePath, options, callback)
             } else {
-                
-                callback(error);
-
+                callback(error)
             }
 
-        });
+        })
 
     } else {
-
-        callback('please specify at least a trackId');
-
+        callback('please specify at least a trackId')
     }
-    
-};
+
+}
 
 /**
  * 
@@ -120,29 +114,29 @@ var getRemoteWaveData = function getRemoteWaveDataFunction(queryObject, callback
  * @param {type} callback
  * @returns {undefined}
  */
-var getLocalWaveData = function getLocalWaveDataFunction(queryObject, callback) {
-    
+const getLocalWaveData = function getLocalWaveDataFunction(queryObject, callback) {
+
     // track options
-    var options = queryObjectToOptions(queryObject);
-    
-    var directoryManager = new DirectoryManager();
-    
+    const options = queryObjectToOptions(queryObject)
+
+    const directoryManager = new DirectoryManager()
+
     directoryManager.exists(options.serverDirectory, function directoryExistsCallback(error, exists) {
-        
-         // if there was no error checking if the directory exists
+
+        // if there was no error checking if the directory exists
         if (!error) {
-        
+
             // if the directory does not exist
             if (!exists) {
-            
-                callback('the server directory does not exist');
-            
+
+                callback('the server directory does not exist')
+
             } else {
-                
-                var fileManager = new FileManager();
-    
-                var filePath = options.serverDirectory + '/' + options.fileName;
-                
+
+                const fileManager = new FileManager()
+
+                const filePath = options.serverDirectory + '/' + options.fileName
+
                 // check if the file exists
                 fileManager.exists(filePath, function fileExistsCallback(error, exists) {
 
@@ -150,36 +144,25 @@ var getLocalWaveData = function getLocalWaveDataFunction(queryObject, callback) 
                     if (!error) {
 
                         if (!exists) {
-
-                            callback('the file does not exist');
-
+                            callback('the file does not exist')
                         } else {
-
-                            analyzeAudio(filePath, options, callback);
-
+                            analyzeAudio(filePath, options, callback)
                         }
 
-                    } else {            
-
-                        callback(error);
-
+                    } else {
+                        callback(error)
                     }
 
-                });
-                
-            }
-            
-        } else {            
-            
-            callback(error);
-            
-        }
-        
-    });
-    
-};
+                })
 
-module.exports = {
-    getRemoteWaveData: getRemoteWaveData,
-    getLocalWaveData: getLocalWaveData
-};
+            }
+
+        } else {
+            callback(error)
+        }
+
+    })
+
+}
+
+export { getRemoteWaveData, getLocalWaveData }

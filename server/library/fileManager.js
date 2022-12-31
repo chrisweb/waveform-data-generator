@@ -1,5 +1,4 @@
-// nodejs fs
-var fs = require('fs');
+import { exists as _exists, existsSync } from 'fs'
 
 /**
  * 
@@ -7,53 +6,49 @@ var fs = require('fs');
  * 
  * @returns {fileManagerConstructor}
  */
-var fileManager = function fileManagerConstructor() {
-    
-};
+class FileManager {
 
-/**
- * 
- * check if the file exists
- * 
- * @param {type} file
- * @param {type} callback
- * @returns {undefined}
- */
-fileManager.prototype.exists = function fileExistsFunction(file, callback) {
-    
-    //console.log('file exists? file: ' + file);
-    
-    if (callback !== undefined) {
-    
-        if (file !== undefined) {
-    
-            // async exists
-            fs.exists(file, function(exists) {
-
-                callback(null, exists);
-
-            });
-            
-        } else {
-            
-            callback('file is undefined');
-            
-        }
-        
-    } else {
-        
-        if (file !== undefined) {
-        
-            return fs.existsSync(file);
-            
-        } else {
-            
-            throw 'file is undefined';
-            
-        }
-        
+    constructor() {
     }
-    
-};
 
-module.exports.fileManager = fileManager;
+    /**
+     *
+     * check if the file exists
+     *
+     * @param {type} file
+     * @param {type} callback
+     * @returns {undefined}
+     */
+    exists(file, callback) {
+
+        //console.log('file exists? file: ' + file)
+
+        if (callback !== undefined) {
+
+            if (file !== undefined) {
+
+                // async exists
+                _exists(file, function (exists) {
+                    callback(null, exists)
+                });
+
+            } else {
+
+                callback('file is undefined')
+
+            }
+
+        } else {
+
+            if (file !== undefined) {
+                return existsSync(file)
+            } else {
+                throw 'file is undefined'
+            }
+
+        }
+
+    }
+}
+
+export default FileManager

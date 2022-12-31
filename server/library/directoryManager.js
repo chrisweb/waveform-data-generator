@@ -1,95 +1,77 @@
-// nodejs fs
-var fs = require('fs');
+import { exists as _exists, existsSync, mkdir, mkdirSync } from 'fs'
 
-/**
- * 
- * directory manager
- * 
- * @returns {directoryManagerConstructor}
- */
-var directoryManager = function directoryManagerConstructor() {
-    
-};
+class DirectoryManager {
 
-/**
- * 
- * check if the directory exists
- * 
- * @param {type} directory
- * @param {type} callback
- * @returns {undefined}
- */
-directoryManager.prototype.exists = function directoryExistsFunction(directory, callback) {
-    
-    //console.log('directory exists? directory: ' + directory);
-    
-    if (callback !== undefined) {
-    
-        if (directory !== undefined) {
-    
-            // async exists
-            fs.exists(directory, function(exists) {
-
-                callback(null, exists);
-
-            });
-            
-        } else {
-            
-            callback('directory is undefined');
-            
-        }
-        
-    } else {
-        
-        if (directory !== undefined) {
-        
-            fs.existsSync(directory);
-            
-        } else {
-            
-            throw 'directory is undefined';
-            
-        }
-        
+    constructor() {
     }
-    
-};
 
-/**
- * 
- * create a new directory
- * 
- * @param {type} directory
- * @param {type} callback
- * @returns {undefined}
- */
-directoryManager.prototype.create = function createDirectoryFunction(directory, callback) {
-    
-    //console.log('create directory: ' + directory);
-    
-    if (callback !== undefined) {
-    
-        fs.mkdir(directory, 0666, function(error) {
+    /**
+     *
+     * check if the directory exists
+     *
+     * @param {type} directory
+     * @param {type} callback
+     * @returns {undefined}
+     */
+    exists(directory, callback) {
 
-            if (!error) {
+        //console.log('directory exists? directory: ' + directory)
 
-                callback(null);
+        if (callback !== undefined) {
+
+            if (directory !== undefined) {
+
+                // async exists
+                _exists(directory, function (exists) {
+                    callback(null, exists)
+                })
 
             } else {
-
-                callback(error);
-
+                callback('directory is undefined')
             }
 
-        });
-        
-    } else {
-        
-        return fs.mkdirSync(directory, 0666);
-        
-    }
-    
-};
+        } else {
 
-module.exports.directoryManager = directoryManager;
+            if (directory !== undefined) {
+                existsSync(directory)
+            } else {
+                throw 'directory is undefined'
+            }
+
+        }
+
+    }
+    /**
+     *
+     * create a new directory
+     *
+     * @param {type} directory
+     * @param {type} callback
+     * @returns {undefined}
+     */
+    create(directory, callback) {
+
+        //console.log('create directory: ' + directory)
+
+        if (callback !== undefined) {
+
+            mkdir(directory, 666, function (error) {
+
+                if (!error) {
+                    callback(null)
+                } else {
+                    callback(error)
+                }
+
+            })
+
+        } else {
+
+            return mkdirSync(directory, 666)
+
+        }
+
+    }
+}
+
+export default DirectoryManager

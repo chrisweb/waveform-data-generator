@@ -1,1 +1,1 @@
-module.exports = require('./server/bootstrap.js');
+export * from './server/bootstrap.js'
