@@ -1,33 +1,32 @@
 {
-  "name": "waveform-data-generator",
-  "version": "1.0.1",
-  "description": "nodejs (ffmpeg) waveform data (peaks) generator",
-  "main": "server.js",
-  "scripts": {
-    "test": "",
-    "start": "node server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/chrisweb/waveform-data-generator.git"
-  },
-  "keywords": [
-    "waveform",
-    "nodejs",
-    "javascript",
-    "data",
-    "generator",
-    "peaks",
-    "ffmpeg"
-  ],
-  "author": "Chris Weber <chris963@gmail.com> (chrisweb)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/chrisweb/waveform-data-generator/issues"
-  },
-  "homepage": "https://github.com/chrisweb/waveform-data-generator",
-  "dependencies": {
-    "marked": "4.2.5"
-  },
-  "type": "module"
+    "name": "waveform-data-generator",
+    "version": "1.0.1",
+    "description": "nodejs (ffmpeg) waveform data (peaks) generator",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/chrisweb/waveform-data-generator.git"
+    },
+    "keywords": [
+        "waveform",
+        "nodejs",
+        "javascript",
+        "data",
+        "generator",
+        "peaks",
+        "ffmpeg"
+    ],
+    "author": "Chris Weber <chris963@gmail.com> (chrisweb)",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/chrisweb/waveform-data-generator/issues"
+    },
+    "homepage": "https://github.com/chrisweb/waveform-data-generator",
+    "dependencies": {
+        "marked": "14.1.1"
+    },
+    "type": "module"
 }
